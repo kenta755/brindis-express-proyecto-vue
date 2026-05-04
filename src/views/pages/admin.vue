@@ -18,7 +18,7 @@
       <div class="wp-topbar-right">
         <button
           class="nav-link notification-bell-btn wp-notif-btn"
-          @click="showNotificationsPanel = !showNotificationsPanel"
+          @click="activeTab = 'notifications'"
           title="Notificaciones"
         >
           <span class="notification-icon">🔔</span>
@@ -63,15 +63,14 @@
             <span class="wp-menu-icon" v-else-if="tab.id === 'users'">👥</span>
             <span class="wp-menu-icon" v-else-if="tab.id === 'promotions'">🎉</span>
             <span class="wp-menu-icon" v-else-if="tab.id === 'tickets'">💬</span>
+            <span class="wp-menu-icon" v-else-if="tab.id === 'notifications'">🔔</span>
             <span class="wp-menu-icon" v-else-if="tab.id === 'logs'">📜</span>
             <span class="wp-menu-icon" v-else-if="tab.id === 'payment-methods'">💳</span>
             <span class="wp-menu-icon" v-else-if="tab.id === 'backup'">💾</span>
             <span class="wp-menu-icon" v-else-if="tab.id === 'suppliers'">🏭</span>
+            <span class="wp-menu-icon" v-else-if="tab.id === 'ideas'">💡</span>
             <span class="wp-menu-icon" v-else>📌</span>
             {{ tab.name }}
-          </button>
-          <button class="wp-menu-item">
-            <span class="wp-menu-icon">◀</span> Collapse menu
           </button>
         </div>
       </aside>
@@ -104,6 +103,10 @@
         </div>
         <div class="section-header">
           <h2 class="section-title">📊 Dashboard</h2>
+          <div class="live-indicator-container">
+            <span class="live-dot"></span>
+            <span class="live-text">SINCRONIZADO EN TIEMPO REAL</span>
+          </div>
           <div class="title-underline"></div>
         </div>
         <div class="dashboard-grid">
@@ -136,10 +139,78 @@
             <p>{{ openTickets }}</p>
           </div>
         </div>
+
+        <!-- Monitor de Páginas Principales -->
+        <div class="section-header" style="margin-top: 2rem;">
+          <h2 class="section-title">🖥️ Monitor de Páginas Principales</h2>
+          <div class="title-underline"></div>
+        </div>
+        <div class="page-monitor-grid">
+          <!-- Monitor Home -->
+          <div class="monitor-card page-home">
+            <div class="monitor-header">
+              <span class="page-icon">🏠</span>
+              <h3>Home Page</h3>
+            </div>
+            <div class="monitor-body">
+              <div class="monitor-stat">
+                <span class="label">Carrusel:</span>
+                <span class="value">{{ homeStats.carouselImages }} imágenes</span>
+              </div>
+              <div class="monitor-stat">
+                <span class="label">Destacados:</span>
+                <span class="value">{{ homeStats.featuredProducts }} productos</span>
+              </div>
+              <router-link to="/home" target="_blank" class="preview-btn">👁️ Previsualizar</router-link>
+            </div>
+          </div>
+
+          <!-- Monitor Catálogo -->
+          <div class="monitor-card page-catalog">
+            <div class="monitor-header">
+              <span class="page-icon">📦</span>
+              <h3>Catálogo</h3>
+            </div>
+            <div class="monitor-body">
+              <div class="monitor-stat">
+                <span class="label">Categorías:</span>
+                <span class="value">{{ categories.length }}</span>
+              </div>
+              <div class="monitor-stat">
+                <span class="label">Salud Stock:</span>
+                <div class="health-bar">
+                  <div class="health-fill" :style="{ width: catalogStats.healthPercent + '%' }"></div>
+                </div>
+                <span class="value">{{ catalogStats.healthPercent }}%</span>
+              </div>
+              <router-link to="/catalogo" target="_blank" class="preview-btn">👁️ Previsualizar</router-link>
+            </div>
+          </div>
+
+          <!-- Monitor Promociones -->
+          <div class="monitor-card page-promotions">
+            <div class="monitor-header">
+              <span class="page-icon">🎯</span>
+              <h3>Promociones</h3>
+            </div>
+            <div class="monitor-body">
+              <div class="monitor-stat">
+                <span class="label">Activas:</span>
+                <span class="value badge-count">{{ activePromosCount }}</span>
+              </div>
+              <div class="monitor-stat">
+                <span class="label">Expiran pronto:</span>
+                <span class="value" :class="{ 'warning-text': true }">1 detectada</span>
+              </div>
+              <router-link to="/promociones" target="_blank" class="preview-btn">👁️ Previsualizar</router-link>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       <!-- Sidebar de Filtros -->
-      <div class="filters-sidebar" :class="{ 'active': showFilters }">
+      <div v-if="activeTab === 'products'" class="filters-sidebar" :class="{ 'active': showFilters }">
         <button @click="showFilters = !showFilters" class="filters-toggle">
           🔧 Filtros
         </button>
@@ -243,7 +314,7 @@
               <div v-if="getProductsByCategory(category.id).length > 0" class="products-grid">
                 <div class="product-card" v-for="product in getProductsByCategory(category.id)" :key="product.id">
                   <div class="card-image-container">
-                    <img :src="product.image" :alt="product.name" class="product-image" />
+                    <img :src="product.image" :alt="product.name" class="product-image" loading="lazy" />
                     <div class="image-overlay"></div>
                   </div>
                   <div class="product-info">
@@ -298,7 +369,7 @@
         <div class="products-grid">
           <div class="product-card" v-for="(order, index) in filteredOrders" :key="order.id">
             <div class="card-image-container">
-              <img :src="order.productImage" :alt="order.productName" class="product-image" />
+              <img :src="order.productImage" :alt="order.productName" class="order-image" loading="lazy" />
               <div class="image-overlay"></div>
             </div>
             <div class="product-info">
@@ -343,19 +414,72 @@
           <button @click="exportUsers" class="export-btn">📥 Exportar CSV</button>
           <button @click="exportUsersPDF" class="export-btn">📥 Exportar PDF</button>
         </div>
+        
+        <!-- Google Login Whitelist Management -->
+        <div class="whitelist-section">
+          <div class="whitelist-header">
+            <h3 class="whitelist-title">🔐 Whitelist de Google Login</h3>
+            <p class="whitelist-description">Solo los usuarios en esta lista pueden usar Google login</p>
+          </div>
+          <div class="whitelist-controls">
+            <div class="whitelist-input-group">
+              <input 
+                v-model="newWhitelistEmail" 
+                placeholder="📧 Email para agregar a whitelist..."
+                class="whitelist-input"
+                @keyup.enter="addToWhitelist"
+              />
+              <button @click="addToWhitelist" class="whitelist-add-btn">
+                ➕ Agregar
+              </button>
+            </div>
+            <div class="whitelist-stats">
+              <span class="whitelist-count">{{ googleWhitelist.length }} usuarios en whitelist</span>
+            </div>
+          </div>
+          <div class="whitelist-list">
+            <div v-for="(email, index) in googleWhitelist" :key="index" class="whitelist-item">
+              <div class="whitelist-email">
+                <span class="email-icon">📧</span>
+                {{ email }}
+              </div>
+              <div class="whitelist-actions">
+                <button @click="removeFromWhitelist(email)" class="whitelist-remove-btn">
+                  🗑️ Remover
+                </button>
+              </div>
+            </div>
+            <div v-if="googleWhitelist.length === 0" class="whitelist-empty">
+              <span class="empty-icon">📭</span>
+              <p>No hay usuarios en la whitelist</p>
+            </div>
+          </div>
+        </div>
         <div class="users-grid">
-          <div class="user-card" v-for="(user, index) in filteredUsers" :key="index">
+          <div class="user-card" v-for="(user, index) in filteredUsers" :key="index" :class="{ 'user-inactive': user.status === 'Inactivo' }">
+            <div class="user-status-badge" :class="{ 'status-active': user.status === 'Activo', 'status-inactive': user.status === 'Inactivo' }">
+              <span class="status-icon">{{ user.status === 'Activo' ? '✅' : '🚫' }}</span>
+              {{ user.status }}
+            </div>
             <div class="user-info">
               <h3 class="product-title">{{ user.name }}</h3>
-              <p class="product-description">Email: {{ user.email }} | Rol: {{ user.role }}</p>
-              <p class="product-description">Estado: {{ user.status }}</p>
+              <p class="product-description">Email: {{ user.email }}</p>
+              <p class="product-description">Rol: {{ user.role }}</p>
+              <div v-if="user.status === 'Inactivo'" class="inactive-warning">
+                <span class="warning-icon">⚠️</span>
+                <span>Usuario inactivo - No puede acceder al sistema</span>
+              </div>
               <div class="admin-user-view">
                 <div class="admin-controls">
                   <div class="admin-actions">
                     <button class="edit-product-btn" @click="openUserModal(user)">
                       <span class="edit-icon">✏️</span> Editar
                     </button>
-                    <button class="view-stats-btn" @click="toggleUserStatus(user)">
+                    <button 
+                      class="view-stats-btn" 
+                      @click="toggleUserStatus(user)"
+                      :class="{ 'deactivate-btn': user.status === 'Activo', 'activate-btn': user.status === 'Inactivo' }"
+                    >
                       <span class="stats-icon">{{ user.status === 'Activo' ? '🔴' : '🟢' }}</span>
                       {{ user.status === 'Activo' ? 'Desactivar' : 'Activar' }}
                     </button>
@@ -568,10 +692,10 @@
 
 
       <!-- Notificaciones -->
-      <div v-if="showNotificationsPanel" id="notifications" class="catalog-section notification-panel">
+      <div v-if="activeTab === 'notifications'" id="notifications" class="catalog-section">
         <div class="section-header">
-          <h2 class="section-title">🔔 Notificaciones</h2>
-          <button class="close-panel-btn" @click="showNotificationsPanel = false">✕ Cerrar</button>
+          <h2 class="section-title">🔔 Centro de Notificaciones</h2>
+          <div class="title-underline"></div>
         </div>
         <div class="search-bar">
           <input v-model="notificationSearchQuery" placeholder="🔍 Buscar notificaciones..." />
@@ -980,18 +1104,66 @@
         </div>
       </div>
 
+      <!-- Delete Confirmation Modal -->
+      <div v-if="showDeleteModal" class="modal-overlay">
+        <div class="modal-content delete-modal">
+          <div class="delete-modal-header">
+            <span class="delete-icon">⚠️</span>
+            <h2>{{ deleteModalData.title }}</h2>
+          </div>
+          <div class="delete-modal-body">
+            <p class="delete-message">{{ deleteModalData.message }}</p>
+            <div v-if="deleteModalData.item" class="delete-item-preview">
+              <div class="preview-info">
+                <span class="preview-label">Item a eliminar:</span>
+                <span class="preview-name">{{ getItemName() }}</span>
+              </div>
+            </div>
+            <div class="delete-warning">
+              <p>⚠️ Esta acción no se puede deshacer</p>
+            </div>
+          </div>
+          <div class="delete-modal-actions">
+            <button @click="confirmDelete" class="delete-confirm-btn">
+              <span class="btn-icon">🗑️</span>
+              Sí, Eliminar
+            </button>
+            <button @click="closeDeleteModal" class="delete-cancel-btn">
+              <span class="btn-icon">❌</span>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
  
+          <!-- Menú de Ideas (Showroom) -->
+          <div v-if="activeTab === 'ideas'" id="ideas-menu" class="catalog-section showroom-integration">
+            <div class="section-header">
+              <h2 class="section-title">💡 Menú de Ideas (Vista Showroom)</h2>
+              <div class="title-underline"></div>
+            </div>
+            <div class="showroom-container-admin">
+              <MenuVirtual />
+            </div>
+          </div>
+
         </div><!-- /content-scroll -->
       </div><!-- /wp-main -->
     </div><!-- /wp-body -->
+    <div v-if="toast.show" :class="['wp-toast', toast.type]">
+      {{ toast.message }}
+    </div>
   </div><!-- /main-layout -->
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import MenuVirtual from './menuvirtual.vue';
 import { useRouter } from 'vue-router';
 import { Chart, registerables } from 'chart.js';
 import { useStore } from '@/stores';
+import { websocketService } from '@/services/websocket';
 Chart.register(...registerables);
 
 const activeTab = ref('dashboard');
@@ -1007,6 +1179,8 @@ const tabs = ref([
   { id: 'payment-methods',  name: 'Métodos de Pago' },
   { id: 'backup',           name: 'Backup' },
   { id: 'suppliers', name: 'Proveedores' },
+  { id: 'notifications',    name: 'Notificaciones' },
+  { id: 'ideas',            name: 'Ideas Menu' },
 ]);
 
 const showFilters    = ref(false);
@@ -1015,9 +1189,39 @@ const isLoading      = ref(false);
 const isDarkMode     = ref(true);
 const backupProgress = ref(0);
 const store          = useStore();
-const showNotificationsPanel = ref(false);
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8222/api';
+
+const orders = ref([]);
+const users = ref([]);
+const products = ref([
+  { id: 1, name: 'Vodka Premium',      image: 'https://bottleengraving.com/cdn/shop/products/belvedere-super-premium-vodka-808216.jpg?v=1689877745&width=1000', price: '$85,000',  description: 'Vodka de alta calidad importado.',           stock: 50, category: 'Licores',   id_categoria: 1 },
+  { id: 2, name: 'Dom Pérignon',        image: 'https://merchantofwine.com/cdn/shop/files/Dom-Perignon-Brut-Champagne-France-2013.jpg?v=1757424322',             price: '$450,000', description: 'Champagne premium para ocasiones especiales.', stock: 20, category: 'Champagne', id_categoria: 2 },
+  { id: 3, name: "Buchanan's 12 Años",  image: 'http://crownwineandspirits.com/cdn/shop/products/buchanan-s-scotch-buchanan-s-deluxe-aged-12-years-blended-scotch-whisky-750ml-31515759870045.jpg?v=1664304151', price: '$120,000', description: 'Whisky escocés añejado 12 años.', stock: 5, category: 'Whisky', id_categoria: 3 },
+]);
+const categories = ref([
+  { id: 1, name: 'Licores',   productCount: 1 },
+  { id: 2, name: 'Champagne', productCount: 1 },
+  { id: 3, name: 'Whisky',    productCount: 1 },
+]);
+const notifications = ref([]);
+const unreadNotifications = computed(() => notifications.value.filter(n => !n.read));
+
+const tickets = ref([
+  { subject:'Problema con pedido', userName:'Juan Pérez', status:'Abierto', createdAt: new Date(),
+    messages:[{ text:'No recibí mi pedido', timestamp: new Date(), sentBy:'Juan Pérez' }] }
+]);
+
+
+
+// Toast state
+const toast = ref({ show: false, message: '', type: 'info' });
+function showToast(message, type = 'info') {
+  toast.value = { show: true, message, type };
+  setTimeout(() => { toast.value.show = false; }, 3000);
+}
+
+
 
 function applyFilters() { showToast('Filtros aplicados', 'info'); }
 function clearFilters() {
@@ -1026,19 +1230,53 @@ function clearFilters() {
   showToast('Filtros limpiados', 'info');
 }
 
+onMounted(() => {
+  checkAuthStatus();
+  loadOrders();
+  // loadUsers(); // If you have it
+  // fetchProducts/Categories from store if needed
+  setTimeout(initCharts, 500);
+});
+
+
+
 // ─── CHARTS ──────────────────────────────────────────────────
 const salesChart = ref(null);
 const stockChart = ref(null);
 const userChart  = ref(null);
 
+let salesChartInstance = null;
+let stockChartInstance = null;
+let userChartInstance  = null;
+
 function initCharts() {
-  new Chart(salesChart.value, {
+  if (!salesChart.value || !stockChart.value || !userChart.value) return;
+
+  if (salesChartInstance) salesChartInstance.destroy();
+  if (stockChartInstance) stockChartInstance.destroy();
+  if (userChartInstance)  userChartInstance.destroy();
+
+  const last6Months = [];
+  const salesData = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    last6Months.push(d.toLocaleString('es-CO', { month: 'short' }));
+    
+    const monthlyTotal = orders.value.filter(o => {
+      const orderDate = new Date(); 
+      return orderDate.getMonth() === d.getMonth() && orderDate.getFullYear() === d.getFullYear();
+    }).length; 
+    salesData.push(monthlyTotal);
+  }
+
+  salesChartInstance = new Chart(salesChart.value, {
     type: 'line',
     data: {
-      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+      labels: last6Months,
       datasets: [{
-        label: 'Ventas',
-        data: [12, 19, 3, 5, 2, 3],
+        label: 'Número de Pedidos',
+        data: salesData,
         borderColor: '#FFD700',
         backgroundColor: 'rgba(255, 215, 0, 0.1)',
         tension: 0.4
@@ -1054,13 +1292,13 @@ function initCharts() {
     }
   });
 
-  new Chart(stockChart.value, {
+  stockChartInstance = new Chart(stockChart.value, {
     type: 'doughnut',
     data: {
-      labels: ['Licores', 'Champagne', 'Whisky'],
+      labels: categories.value.map(c => c.name),
       datasets: [{
-        data: [30, 20, 50],
-        backgroundColor: ['#FFD700', '#FF4500', '#8B4513']
+        data: categories.value.map(c => c.productCount),
+        backgroundColor: ['#FFD700', '#FF4500', '#8B4513', '#48bb78', '#3182ce', '#805ad5']
       }]
     },
     options: {
@@ -1069,7 +1307,7 @@ function initCharts() {
     }
   });
 
-  new Chart(userChart.value, {
+  userChartInstance = new Chart(userChart.value, {
     type: 'pie',
     data: {
       labels: ['Activos', 'Inactivos'],
@@ -1118,11 +1356,8 @@ function logout() {
 }
 
 // ─── PRODUCTOS ────────────────────────────────────────────────
-const products = ref([
-  { id: 1, name: 'Vodka Premium',      image: 'https://bottleengraving.com/cdn/shop/products/belvedere-super-premium-vodka-808216.jpg?v=1689877745&width=1000', price: '$85,000',  description: 'Vodka de alta calidad importado.',           stock: 50, category: 'Licores',   id_categoria: 1 },
-  { id: 2, name: 'Dom Pérignon',        image: 'https://merchantofwine.com/cdn/shop/files/Dom-Perignon-Brut-Champagne-France-2013.jpg?v=1757424322',             price: '$450,000', description: 'Champagne premium para ocasiones especiales.', stock: 20, category: 'Champagne', id_categoria: 2 },
-  { id: 3, name: "Buchanan's 12 Años",  image: 'http://crownwineandspirits.com/cdn/shop/products/buchanan-s-scotch-buchanan-s-deluxe-aged-12-years-blended-scotch-whisky-750ml-31515759870045.jpg?v=1664304151', price: '$120,000', description: 'Whisky escocés añejado 12 años.', stock: 5, category: 'Whisky', id_categoria: 3 },
-]);
+// (Variables movidas al inicio)
+
 
 const productSearchQuery = ref('');
 const stockFilter        = ref('');
@@ -1138,6 +1373,16 @@ const filteredProducts = computed(() => {
 
 const showProductModal = ref(false);
 const currentProduct   = ref(null);
+
+// Delete confirmation modal state
+const showDeleteModal = ref(false);
+const deleteModalData = ref({
+  type: '', // 'product', 'category', 'user', 'promotion'
+  item: null,
+  index: null,
+  title: '',
+  message: ''
+});
 const productForm      = ref({
   nombre: '', marca: '', precio_venta: 0, precio_compra: 0,
   stock_minimo: 0, stock_actual: 0, imagen_url: '',
@@ -1246,21 +1491,305 @@ async function saveProduct() {
   }
 }
 
+// Local status tracking to preserve changes during data reloads (persisted in localStorage)
+const localUserStatusChanges = ref(new Map(JSON.parse(localStorage.getItem('localUserStatusChanges') || '[]')));
+
+// Google login whitelist management
+const googleWhitelist = ref(JSON.parse(localStorage.getItem('googleWhitelist') || '[]'));
+const newWhitelistEmail = ref('');
+
+// Save whitelist to localStorage whenever it's updated
+watch(googleWhitelist, (newWhitelist) => {
+  localStorage.setItem('googleWhitelist', JSON.stringify(newWhitelist));
+}, { deep: true });
+
+// Save changes to localStorage whenever they're updated
+watch(localUserStatusChanges, (newChanges) => {
+  localStorage.setItem('localUserStatusChanges', JSON.stringify(Array.from(newChanges.entries())));
+}, { deep: true });
+
+// Helper functions for managing local status tracking
+function clearLocalStatusTracking(userId = null) {
+  if (userId) {
+    localUserStatusChanges.value.delete(userId);
+  } else {
+    localUserStatusChanges.value.clear();
+  }
+  localStorage.setItem('localUserStatusChanges', JSON.stringify(Array.from(localUserStatusChanges.value.entries())));
+  console.log('🗑️ Local status tracking cleared:', { userId, remaining: localUserStatusChanges.value.size });
+}
+
+function getLocalStatus(userId) {
+  return localUserStatusChanges.value.get(userId);
+}
+
+function hasLocalChanges() {
+  return localUserStatusChanges.value.size > 0;
+}
+
+// Whitelist management functions
+function addToWhitelist() {
+  const email = newWhitelistEmail.value.toLowerCase().trim();
+  if (email && !googleWhitelist.value.includes(email)) {
+    googleWhitelist.value.push(email);
+    newWhitelistEmail.value = '';
+    pushNotification('Usuario agregado a whitelist', `${email} ahora puede usar Google login.`);
+    showToast('Usuario agregado exitosamente', 'success');
+  } else if (googleWhitelist.value.includes(email)) {
+    showToast('Este usuario ya está en la whitelist', 'warning');
+  }
+}
+
+function removeFromWhitelist(email) {
+  const index = googleWhitelist.value.indexOf(email);
+  if (index > -1) {
+    googleWhitelist.value.splice(index, 1);
+    pushNotification('Usuario removido de whitelist', `${email} ya no puede usar Google login.`);
+    showToast('Usuario removido exitosamente', 'success');
+  }
+}
+
+function isUserInWhitelist(userEmail) {
+  return googleWhitelist.value.includes(userEmail.toLowerCase().trim());
+}
+
+// Delete Confirmation Modal Functions
+function openDeleteModal(type, item, index = null) {
+  deleteModalData.value = {
+    type,
+    item,
+    index,
+    title: getDeleteTitle(type),
+    message: getDeleteMessage(type, item)
+  };
+  showDeleteModal.value = true;
+}
+
+function closeDeleteModal() {
+  showDeleteModal.value = false;
+  deleteModalData.value = {
+    type: '',
+    item: null,
+    index: null,
+    title: '',
+    message: ''
+  };
+}
+
+function getItemName() {
+  const { type, item } = deleteModalData.value;
+  if (!item) return '';
+  
+  switch (type) {
+    case 'product':
+      return item.name || item.nombre || 'Producto';
+    case 'category':
+      return item.name || item.nombre || 'Categoría';
+    case 'user':
+      return item.name || item.nombre || 'Usuario';
+    case 'promotion':
+      return item.nombre_promocion || item.nombre || 'Promoción';
+    default:
+      return 'Item';
+  }
+}
+
+function getDeleteTitle(type) {
+  switch (type) {
+    case 'product':
+      return 'Eliminar Producto';
+    case 'category':
+      return 'Eliminar Categoría';
+    case 'user':
+      return 'Eliminar Usuario';
+    case 'promotion':
+      return 'Eliminar Promoción';
+    default:
+      return 'Confirmar Eliminación';
+  }
+}
+
+function getDeleteMessage(type, item) {
+  const itemName = getItemName();
+  switch (type) {
+    case 'product':
+      return `¿Estás seguro de que deseas eliminar el producto "${itemName}"? Esta acción también eliminará el producto de la base de datos.`;
+    case 'category':
+      return `¿Estás seguro de que deseas eliminar la categoría "${itemName}"? Los productos en esta categoría serán movidos a "Sin categoría".`;
+    case 'user':
+      return `¿Estás seguro de que deseas eliminar al usuario "${itemName}"? Esta acción también eliminará el usuario de la base de datos.`;
+    case 'promotion':
+      return `¿Estás seguro de que deseas eliminar la promoción "${itemName}"? Esta acción también eliminará la promoción de la base de datos.`;
+    default:
+      return `¿Estás seguro de que deseas eliminar este item?`;
+  }
+}
+
+async function confirmDelete() {
+  const { type, item, index } = deleteModalData.value;
+  
+  try {
+    isLoading.value = true;
+    
+    switch (type) {
+      case 'product':
+        await handleDeleteProduct(item, index);
+        break;
+      case 'category':
+        await handleDeleteCategory(item, index);
+        break;
+      case 'user':
+        await handleDeleteUser(item, index);
+        break;
+      case 'promotion':
+        await handleDeletePromotion(item);
+        break;
+    }
+    
+    closeDeleteModal();
+  } catch (error) {
+    console.error('Error en confirmDelete:', error);
+    showToast(error.message || 'Error al eliminar', 'error');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 function deleteProduct(index) {
-  if (!confirm('¿Eliminar este producto?')) return;
-  const name = products.value[index].name;
-  const cat  = categories.value.find(c => c.name === products.value[index].category);
-  if (cat) cat.productCount--;
-  products.value.splice(index, 1);
-  pushNotification('Producto eliminado', `El producto ${name} fue eliminado.`);
+  const product = products.value[index];
+  openDeleteModal('product', product, index);
+}
+
+// Delete Handler Functions with API calls
+async function handleDeleteProduct(product, index) {
+  try {
+    // Make API call to delete from database
+    const productId = product.id_producto || product.id;
+    const response = await fetch(`${API_URL}/productos/${productId}`, {
+      method: 'DELETE',
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok && response.status !== 204) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error ${response.status}`);
+    }
+
+    // Remove from local state
+    const name = product.name || product.nombre;
+    const cat = categories.value.find(c => c.name === (product.category || product.categoria));
+    if (cat) cat.productCount--;
+    products.value.splice(index, 1);
+    
+    pushNotification('Producto eliminado', `El producto ${name} fue eliminado de la base de datos.`);
+    showToast('Producto eliminado exitosamente', 'success');
+    
+  } catch (error) {
+    console.error('❌ handleDeleteProduct:', error);
+    throw error;
+  }
+}
+
+async function handleDeleteCategory(category, index) {
+  try {
+    // Make API call to delete from database
+    const categoryId = category.id_categoria || category.id;
+    const response = await fetch(`${API_URL}/categorias/${categoryId}`, {
+      method: 'DELETE',
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok && response.status !== 204) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error ${response.status}`);
+    }
+
+    // Update local state - move products to "Sin categoría"
+    const name = category.name || category.nombre;
+    products.value = products.value.map(p =>
+      (p.category === name || p.categoria === name) 
+        ? { ...p, category: 'Sin categoría', categoria: 'Sin categoría' } 
+        : p
+    );
+    categories.value.splice(index, 1);
+    
+    pushNotification('Categoría eliminada', `La categoría ${name} fue eliminada de la base de datos.`);
+    showToast('Categoría eliminada exitosamente', 'success');
+    
+  } catch (error) {
+    console.error('❌ handleDeleteCategory:', error);
+    throw error;
+  }
+}
+
+async function handleDeleteUser(user, index) {
+  try {
+    // Make API call to delete from database
+    const userId = user.id_usuario || user.id;
+    const response = await fetch(`${API_URL}/usuarios/${userId}`, {
+      method: 'DELETE',
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok && response.status !== 204) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error ${response.status}`);
+    }
+
+    // Remove from local state
+    const name = user.name || user.nombre;
+    users.value.splice(index, 1);
+    
+    pushNotification('Usuario eliminado', `${name} fue eliminado de la base de datos.`);
+    showToast('Usuario eliminado exitosamente', 'success');
+    
+  } catch (error) {
+    console.error('❌ handleDeleteUser:', error);
+    throw error;
+  }
+}
+
+async function handleDeletePromotion(promotion) {
+  try {
+    // Make API call to delete from database
+    const promotionId = promotion.id_promocion || promotion.id;
+    const response = await fetch(`${API_URL}/promociones/${promotionId}`, {
+      method: 'DELETE',
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok && response.status !== 204) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error ${response.status}`);
+    }
+
+    // Remove from local state
+    promotions.value = promotions.value.filter(p => p.id_promocion !== promotion.id_promocion);
+    
+    pushNotification('Promoción eliminada', `"${promotion.nombre_promocion}" fue eliminada de la base de datos.`);
+    showToast('Promoción eliminada exitosamente', 'success');
+    
+  } catch (error) {
+    console.error('❌ handleDeletePromotion:', error);
+    throw error;
+  }
 }
 
 // ─── CATEGORÍAS ───────────────────────────────────────────────
-const categories          = ref([
-  { id: 1, name: 'Licores',   productCount: 1 },
-  { id: 2, name: 'Champagne', productCount: 1 },
-  { id: 3, name: 'Whisky',    productCount: 1 },
-]);
+// (Variables movidas al inicio)
+
 const categorySearchQuery = ref('');
 const showCategoryModal   = ref(false);
 const currentCategory     = ref(null);
@@ -1343,13 +1872,8 @@ async function saveCategory() {
 }
 
 function deleteCategory(index) {
-  if (!confirm('¿Eliminar esta categoría?')) return;
-  const name = categories.value[index].name;
-  products.value = products.value.map(p =>
-    p.category === name ? { ...p, category: 'Sin categoría' } : p
-  );
-  categories.value.splice(index, 1);
-  pushNotification('Categoría eliminada', `La categoría ${name} fue eliminada.`);
+  const category = categories.value[index];
+  openDeleteModal('category', category, index);
 }
 
 function getCategoryNameById(categoryId) {
@@ -1363,14 +1887,26 @@ function getProductsByCategory(categoryId) {
 }
 
 // ─── NOTIFICACIONES ───────────────────────────────────────────
-const notifications = ref([
-  { id: 1, title: 'Producto con bajo stock',  message: "El producto 'Buchanan's 12 Años' tiene solo 5 unidades.", timestamp: new Date('2025-10-16T10:00:00'), read: false },
-  { id: 2, title: 'Nuevo pedido recibido',    message: "Nuevo pedido de 'Vodka Premium' por Juan Pérez.",          timestamp: new Date('2025-10-16T12:30:00'), read: false },
-  { id: 3, title: 'Usuario registrado',       message: 'Carlos López se registró en el sistema.',                  timestamp: new Date('2025-10-15T09:15:00'), read: true  },
-]);
+
+// ─── NOTIFICACIONES ───────────────────────────────────────────
+// (Variables movidas al inicio)
 
 const notificationSearchQuery = ref('');
-const notificationFilter      = ref('');
+const notificationFilter = ref('');
+
+watch(() => orders.value.length, (newVal, oldVal) => {
+  if (newVal > oldVal && oldVal > 0) {
+    const newOrder = orders.value[0];
+    pushNotification('🛍️ Nuevo Pedido', `Se ha recibido un pedido de ${newOrder?.userName || 'un cliente'} por ${newOrder?.total || 'su total'}.`);
+  }
+});
+
+watch(() => users.value.length, (newVal, oldVal) => {
+  if (newVal > oldVal && oldVal > 0) {
+    const newUser = users.value[0];
+    pushNotification('👤 Nuevo Registro', `${newUser?.name || 'Un usuario'} se ha registrado en la plataforma.`);
+  }
+});
 
 const filteredNotifications = computed(() => {
   let f = notifications.value.filter(n =>
@@ -1382,7 +1918,8 @@ const filteredNotifications = computed(() => {
   return f;
 });
 
-const unreadNotifications = computed(() => notifications.value.filter(n => !n.read));
+// (Computeds movidos al inicio)
+
 
 function pushNotification(title, message) {
   notifications.value.push({
@@ -1401,19 +1938,45 @@ function clearAllNotifications()   {
   if (confirm('¿Eliminar todas las notificaciones?')) notifications.value = [];
 }
 
-// ─── PEDIDOS ─────────────────────────────────────────────────
-const orders = ref([
-  { id:1, productId:1, productName:'Vodka Premium',     productImage:'https://bottleengraving.com/cdn/shop/products/belvedere-super-premium-vodka-808216.jpg?v=1689877745&width=1000', userName:'Juan Pérez',   status:'Pendiente', quantity:1, total:'$85,000' },
-  { id:2, productId:2, productName:'Dom Pérignon',       productImage:'https://merchantofwine.com/cdn/shop/files/Dom-Perignon-Brut-Champagne-France-2013.jpg?v=1757424322',            userName:'María Gómez', status:'Enviado',   quantity:2, total:'$900,000' },
-  { id:3, productId:3, productName:"Buchanan's 12 Años", productImage:'http://crownwineandspirits.com/cdn/shop/products/buchanan-s-scotch-buchanan-s-deluxe-aged-12-years-blended-scotch-whisky-750ml-31515759870045.jpg?v=1664304151', userName:'Carlos López', status:'Entregado', quantity:1, total:'$120,000' },
-]);
+// ─── PEDIDOS (VENTAS) ─────────────────────────────────────────
+
+async function loadOrders() {
+  try {
+    const response = await fetch(`${API_URL}/ventas`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+    });
+    if (!response.ok) throw new Error('Error al cargar ventas');
+    const data = await response.json();
+    orders.value = data.map(v => ({
+      id: v.id_venta,
+      productId: v.id_producto || 1, // Fallback if not joined
+      productName: v.nombre_producto || 'Venta Brindis',
+      productImage: v.imagen_producto || 'https://via.placeholder.com/100',
+      userName: v.usuario ? `${v.usuario.nombre} ${v.usuario.apellido}` : 'Invitado',
+      status: v.estado === 'completada' ? 'Entregado' : (v.estado === 'pendiente' ? 'Pendiente' : 'Enviado'),
+      quantity: 1,
+      total: `$${Number(v.total_venta).toLocaleString('es-CO')}`
+    }));
+  } catch (error) {
+    console.error('❌ loadOrders:', error);
+  }
+}
+
 
 const orderSearchQuery  = ref('');
+const debouncedOrderQuery = ref('');
+let orderDebounceTimer = null;
+
+watch(orderSearchQuery, (val) => {
+  clearTimeout(orderDebounceTimer);
+  orderDebounceTimer = setTimeout(() => { debouncedOrderQuery.value = val; }, 300);
+});
+
 const orderStatusFilter = ref('');
 
 const filteredOrders = computed(() =>
   orders.value.filter(o =>
-    o.productName.toLowerCase().includes(orderSearchQuery.value.toLowerCase()) &&
+    o.productName.toLowerCase().includes(debouncedOrderQuery.value.toLowerCase()) &&
     (orderStatusFilter.value === '' || o.status === orderStatusFilter.value)
   )
 );
@@ -1455,11 +2018,69 @@ function saveOrderStatus() {
 }
 
 // ─── USUARIOS ────────────────────────────────────────────────
-const users = ref([
-  { name:'Juan Pérez',   email:'juan.perez@brazzinos.com',   role:'Cliente',       status:'Activo' },
-  { name:'María Gómez',  email:'maria.gomez@brazzinos.com',  role:'Administrador', status:'Activo' },
-  { name:'Carlos López', email:'carlos.lopez@brazzinos.com', role:'Cliente',       status:'Inactivo' },
-]);
+
+async function loadUsers() {
+  try {
+    console.log('🔄 Cargando usuarios desde backend...');
+    
+    const response = await fetch(`${API_URL}/usuarios`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+    });
+    if (!response.ok) throw new Error('Error al cargar usuarios');
+    const data = await response.json();
+    
+    console.log('📊 Datos recibidos del backend:', {
+      totalBackendUsers: data.length,
+      localChangesBefore: localUserStatusChanges.value.size
+    });
+    
+    // Map users and apply any local status changes
+    users.value = data.map(u => {
+      const userId = u.id;
+      const localStatus = getLocalStatus(userId);
+      const backendStatus = u.activo ? 'Activo' : 'Inactivo';
+      const finalStatus = localStatus || backendStatus;
+      
+      // Log if there's a local override
+      if (localStatus && localStatus !== backendStatus) {
+        console.log('🔄 Aplicando cambio local:', {
+          userId,
+          userName: `${u.nombre} ${u.apellido}`,
+          backendStatus,
+          localStatus,
+          finalStatus
+        });
+      }
+      
+      return {
+        id: userId,
+        name: `${u.nombre} ${u.apellido}`,
+        email: u.email,
+        role: u.role === 'admin' ? 'Administrador' : 'Cliente',
+        status: finalStatus
+      };
+    });
+    
+    console.log('✅ Usuarios cargados con cambios locales preservados:', {
+      totalUsers: users.value.length,
+      localChangesAfter: localUserStatusChanges.value.size,
+      hasLocalChanges: hasLocalChanges()
+    });
+    
+    // Show summary of local changes
+    if (hasLocalChanges()) {
+      const deactivatedUsers = users.value.filter(u => getLocalStatus(u.id) === 'Inactivo');
+      console.log('🔒 Usuarios con estado local modificado:', {
+        totalLocalChanges: localUserStatusChanges.value.size,
+        deactivatedCount: deactivatedUsers.length,
+        deactivatedUsers: deactivatedUsers.map(u => ({ id: u.id, name: u.name, status: u.status }))
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ loadUsers:', error);
+  }
+}
 
 const userSearchQuery = ref('');
 const userRoleFilter  = ref('');
@@ -1493,27 +2114,208 @@ function saveUser() {
   closeUserModal();
 }
 function deleteUser(index) {
-  if (!confirm('¿Eliminar este usuario?')) return;
-  const name = users.value[index].name;
-  users.value.splice(index, 1);
-  pushNotification('Usuario eliminado', `${name} fue eliminado.`);
+  const user = users.value[index];
+  openDeleteModal('user', user, index);
 }
-function toggleUserStatus(user) {
-  user.status = user.status === 'Activo' ? 'Inactivo' : 'Activo';
-  pushNotification('Estado actualizado', `${user.name} → ${user.status}.`);
+async function toggleUserStatus(user) {
+  try {
+    isLoading.value = true;
+    
+    // Determine the new status
+    const newStatus = user.status === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActive = newStatus === 'Activo';
+    
+    console.log('🔄 Iniciando toggleUserStatus para:', {
+      userName: user.name,
+      currentStatus: user.status,
+      newStatus: newStatus,
+      userId: user.id,
+      userEmail: user.email
+    });
+
+    // Store the local status change to preserve it during data reloads
+    localUserStatusChanges.value.set(user.id, newStatus);
+    console.log('💾 Cambio local guardado en localStorage:', {
+      userId: user.id,
+      userName: user.name,
+      newStatus,
+      totalLocalChanges: localUserStatusChanges.value.size
+    });
+    
+    // Update local state immediately to provide visual feedback
+    const oldStatus = user.status;
+    user.status = newStatus;
+    
+    console.log('✅ Estado local actualizado y guardado:', {
+      userName: user.name,
+      oldStatus: oldStatus,
+      newStatus: user.status,
+      localChangesCount: localUserStatusChanges.value.size
+    });
+    
+    pushNotification('Estado actualizado', `${user.name} → ${user.status}.`);
+    showToast(`Usuario ${newStatus.toLowerCase()} exitosamente`, 'success');
+    
+    // If user was deactivated, log them out if they're currently logged in
+    if (!isActive) {
+      console.log('🔒 Usuario desactivado, verificando si necesita cerrar sesión');
+      await logoutDeactivatedUser(user.email);
+    }
+    
+    // Try to sync with backend (now with better error handling)
+    try {
+      const userId = user.id_usuario || user.id || user.user_id;
+      
+      if (userId) {
+        const adminToken = localStorage.getItem('adminToken');
+        const url = `${API_URL}/usuarios/${userId}/status`;
+        console.log('🔄 Intentando sincronizar con backend:', {
+          userId,
+          url,
+          isActive,
+          hasAdminToken: !!adminToken,
+          adminTokenPreview: adminToken ? adminToken.substring(0, 20) + '...' : 'NO TOKEN'
+        });
+        
+        // For reactivation, try multiple endpoints to ensure it works
+        let syncSuccess = false;
+        
+        // Try 1: Status endpoint
+        try {
+          console.log('📡 Sending PATCH request to:', url);
+          const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ activo: isActive })
+          });
+
+          if (response.ok) {
+            console.log('✅ Backend sincronizado correctamente (status endpoint)');
+            syncSuccess = true;
+          } else {
+            const errorText = await response.text();
+            console.log('⚠️ Status endpoint failed:', response.status, errorText);
+          }
+        } catch (statusError) {
+          console.log('⚠️ Status endpoint error:', statusError.message);
+        }
+        
+        // Try 2: PUT endpoint as fallback
+        if (!syncSuccess) {
+          try {
+            const response = await fetch(`${API_URL}/usuarios/${userId}`, {
+              method: 'PUT',
+              headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ 
+                activo: isActive,
+                nombre: user.name?.split(' ')[0] || 'Usuario',
+                email: user.email
+              })
+            });
+
+            if (response.ok) {
+              console.log('✅ Backend sincronizado correctamente (PUT endpoint)');
+              syncSuccess = true;
+            } else {
+              console.log('⚠️ PUT endpoint also failed');
+            }
+          } catch (putError) {
+            console.log('⚠️ PUT endpoint error:', putError.message);
+          }
+        }
+        
+        // If sync succeeded, clear local tracking for reactivated users
+        if (syncSuccess && isActive) {
+          console.log('✅ Usuario reactivado - limpiando tracking local');
+          clearLocalStatusTracking(userId);
+          
+          // Force reload users to get fresh data
+          setTimeout(() => {
+            loadUsers();
+          }, 1000);
+        } else if (!syncSuccess) {
+          console.log('⚠️ Backend no sincronizado, pero estado local preservado');
+        }
+      }
+    } catch (apiError) {
+      console.log('⚠️ Error en API, pero estado local preservado:', apiError.message);
+    }
+    
+  } catch (error) {
+    console.error('❌ toggleUserStatus:', error);
+    showToast(error.message || 'Error al actualizar estado del usuario', 'error');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Function to logout deactivated users
+async function logoutDeactivatedUser(userEmail) {
+  try {
+    // Check if the deactivated user is currently logged in
+    const currentUser = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (currentUser.email === userEmail) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('usuario');
+      console.log(`Usuario ${userEmail} fue desactivado y cerró sesión automáticamente`);
+    }
+  } catch (error) {
+    console.error('Error checking logged in user:', error);
+  }
 }
 
 // ─── DASHBOARD STATS ─────────────────────────────────────────
+const ventaStats = ref({ total: 0, completadas: 0, pendientes: 0 });
+const montoStats = ref({ totalGeneral: 0, totalCompletadas: 0, totalPendientes: 0 });
+
+async function loadStats() {
+  try {
+    const [resStats, resMontos] = await Promise.all([
+      fetch(`${API_URL}/ventas/estadisticas`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` } }),
+      fetch(`${API_URL}/ventas/montos`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` } })
+    ]);
+    if (resStats.ok)  ventaStats.value = await resStats.json();
+    if (resMontos.ok) montoStats.value = await resMontos.json();
+  } catch (error) {
+    console.error('❌ loadStats:', error);
+  }
+}
+
 const totalSales = computed(() =>
-  orders.value.reduce((sum, o) => {
-    const v = parseFloat(o.total.replace(/[^0-9.-]+/g, ''));
-    return sum + (isNaN(v) ? 0 : v);
-  }, 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP' })
+  Number(montoStats.value.totalGeneral).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
 );
 const activeUsers      = computed(() => users.value.filter(u => u.status === 'Activo').length);
-const pendingOrders    = computed(() => orders.value.filter(o => o.status === 'Pendiente').length);
+const pendingOrders    = computed(() => ventaStats.value.pendientes);
 const lowStockProducts = computed(() => products.value.filter(p => p.stock < 10).length);
 const openTickets      = computed(() => tickets.value.filter(t => t.status === 'Abierto').length);
+
+// ─── MONITOR DE PÁGINAS ────────────────────────────────────────
+const activePromosCount = computed(() => promotions.value.filter(p => p.activo).length);
+const catalogStats = computed(() => {
+  const total = products.value.length;
+  const lowStock = products.value.filter(p => p.stock < 10).length;
+  const healthyStock = total - lowStock;
+  return {
+    total,
+    healthyStock,
+    lowStock,
+    healthPercent: total > 0 ? Math.round((healthyStock / total) * 100) : 0
+  };
+});
+const homeStats = computed(() => ({
+  carouselImages: 3, 
+  featuredProducts: products.value.slice(0, 3).length
+}));
+const virtualMenuStats = computed(() => ({
+  heroProduct: products.value[0]?.name || 'Ninguno',
+  status: 'Exclusivo Bares Locales'
+}));
 
 // ─── PROMOCIONES ─────────────────────────────────────────────
 const promotions           = ref([]);
@@ -1688,28 +2490,8 @@ async function savePromotion() {
 }
 
 // ✅ CORREGIDO: recibe el objeto, no el índice
-async function deletePromotion(promotion) {
-  if (!confirm(`¿Eliminar la promoción "${promotion.nombre_promocion}"?`)) return;
-  try {
-    isLoading.value = true;
-    const response = await fetch(`${API_URL}/promociones/${promotion.id_promocion}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
-    });
-    if (response.status !== 204 && !response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || `Error ${response.status}`);
-    }
-    // ✅ filter por ID — funciona aunque haya búsqueda activa
-    promotions.value = promotions.value.filter(p => p.id_promocion !== promotion.id_promocion);
-    pushNotification('Promoción eliminada', `"${promotion.nombre_promocion}" fue eliminada.`);
-    showToast('Promoción eliminada', 'success');
-  } catch (error) {
-    console.error('❌ deletePromotion:', error);
-    showToast(error.message || 'Error al eliminar la promoción', 'error');
-  } finally {
-    isLoading.value = false;
-  }
+function deletePromotion(promotion) {
+  openDeleteModal('promotion', promotion);
 }
 
 async function desactivarPromotion(promotion) {
@@ -1740,10 +2522,8 @@ async function desactivarPromotion(promotion) {
 const showTicketChatModal = ref(false);
 const currentTicket       = ref(null);
 const newMessage          = ref('');
-const tickets             = ref([
-  { subject:'Problema con pedido', userName:'Juan Pérez', status:'Abierto', createdAt: new Date(),
-    messages:[{ text:'No recibí mi pedido', timestamp: new Date(), sentBy:'Juan Pérez' }] }
-]);
+// (Variable tickets movida al inicio)
+
 
 const ticketSearchQuery  = ref('');
 const ticketStatusFilter = ref('');
@@ -1893,49 +2673,85 @@ function formatDate(date) {
 
 function checkLowStock() {
   products.value.forEach(p => {
-    if (p.stock < 10 && !notifications.value.some(n => n.message.includes(`'${p.name}' tiene solo ${p.stock}`))) {
-      pushNotification('Producto con bajo stock', `El producto '${p.name}' tiene solo ${p.stock} unidades en stock.`);
+    if (p.stock < 10) {
+      const alreadyNotified = notifications.value.some(n => 
+        n.title === '⚠️ Stock Bajo' && n.message.includes(`'${p.name}'`)
+      );
+      if (!alreadyNotified) {
+        pushNotification('⚠️ Stock Bajo', `El producto '${p.name}' tiene solo ${p.stock} unidades. ¡Reabastece pronto!`);
+      }
     }
   });
 }
 
-function showToast(message, type) {
-  console.log(`[${type.toUpperCase()}] ${message}`);
-}
+
 
 // ─── CARGAR BACKEND ──────────────────────────────────────────
+async function fetchAllData() {
+  try {
+    await Promise.all([
+      store.fetchCategories(),
+      store.fetchProducts(),
+      loadPromotions(),
+      loadSuppliers(),
+      loadOrders(),
+      loadUsers(),
+      loadStats()
+    ]);
+
+    categories.value = store.categories.map(cat => ({
+      id:           cat.id,
+      name:         cat.nombre,
+      description:  cat.description || '',
+      activo:       cat.activo,
+      productCount: cat.productos ? cat.productos.length : 0
+    }));
+
+    products.value = store.products.map(prod => ({
+      id:           prod.id,
+      name:         prod.nombre,
+      image:        prod.imagen_url || '',
+      price:        `$${Number(prod.precio_venta).toLocaleString('es-CO')}`,
+      stock:        prod.stock_actual,
+      category:     store.getCategoryName(prod.id_categoria),
+      id_categoria: prod.id_categoria
+    }));
+
+    checkLowStock();
+    if (activeTab.value === 'dashboard') {
+      initCharts();
+    }
+  } catch (error) {
+    console.error('Error in real-time sync:', error);
+  }
+}
+let syncInterval = null;
+
 onMounted(async () => {
   checkAuthStatus();
-
-  await store.fetchCategories();
-  await store.fetchProducts();
-
-  categories.value = store.categories.map(cat => ({
-    id:           cat.id,
-    name:         cat.nombre,
-    description:  cat.description || '',
-    activo:       cat.activo,
-    productCount: cat.productos ? cat.productos.length : 0
-  }));
-
-  products.value = store.products.map(prod => ({
-    id:           prod.id,
-    name:         prod.nombre,
-    image:        prod.imagen_url || '',
-    price:        `$${Number(prod.precio_venta).toLocaleString('es-CO')}`,
-    stock:        prod.stock_actual,
-    category:     store.getCategoryName(prod.id_categoria),
-    id_categoria: prod.id_categoria
-  }));
-
-  await loadPromotions();
-  await loadSuppliers(); // ← agrega esta línea
-
-  checkLowStock();
+  await fetchAllData();
+  
+  if (isAuthenticated.value) {
+    pushNotification('👋 Bienvenida', `Hola ${userName.value}, panel de administración sincronizado.`);
+    
+    // Connect to WebSocket for real-time user status updates
+    websocketService.connect()
+    
+    // Listen for user status updates from other admin actions
+    // This is handled by the WebSocket service, but we can refresh user list when received
+    console.log('🔔 Admin WebSocket connected - listening for user status updates')
+  }
   setTimeout(initCharts, 500);
-  toggleTheme();
+
+  syncInterval = setInterval(() => {
+    if (!document.hidden) fetchAllData();
+  }, 30000);
 });
-// ─── PROVEEDORES ──────────────────────────────────────────────
+
+onUnmounted(() => {
+  if (syncInterval) clearInterval(syncInterval);
+  websocketService.disconnect()
+});
 // ─── PROVEEDORES ──────────────────────────────────────────────
 const suppliers = ref([]);
 const supplierSearchQuery = ref('');
@@ -2329,6 +3145,7 @@ function deleteBrand(index) {
 .product-card, .promotion-card, .notification-card, .ticket-card, .user-card, .log-card {
   background: rgba(40,40,40,0.9); border-radius:15px; padding:1.5rem;
   box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:all 0.3s ease;
+  position: relative;
 }
 .product-card:hover, .promotion-card:hover, .notification-card:hover,
 .ticket-card:hover, .user-card:hover { transform:translateY(-5px); }
@@ -2406,6 +3223,14 @@ function deleteBrand(index) {
 .chat-input input { flex-grow:1; padding:0.5rem; border:1px solid rgba(255,215,0,0.2); border-radius:5px; background:rgba(40,40,40,0.5); color:#e0e0e0; }
 .order-details img { max-width:100%; border-radius:5px; margin-bottom:1rem; }
 .payment-form { display:flex; flex-direction:column; gap:1.5rem; padding:1.5rem; background:rgba(40,40,40,0.9); border-radius:10px; }
+
+/* Grid de promociones — mismo estilo que productos en categorías */
+.promotions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
 .backup-actions { display:flex; gap:1.5rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap; }
 .backup-actions input[type="file"] { display:none; }
 .progress-bar   { width:100%; background:rgba(255,255,255,0.1); border-radius:5px; overflow:hidden; margin-top:1rem; }
@@ -2813,6 +3638,82 @@ function deleteBrand(index) {
   color: rgba(200,175,130,0.55) !important;
 }
 
+/* User Status Indicators */
+.user-status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  z-index: 10;
+}
+
+.status-active {
+  background: linear-gradient(135deg, #48bb78, #2f855a);
+  color: white;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}
+
+.status-inactive {
+  background: linear-gradient(135deg, #e53e3e, #c53030);
+  color: white;
+  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
+}
+
+.user-inactive {
+  opacity: 0.7;
+  border: 2px solid rgba(229, 62, 62, 0.3);
+}
+
+.user-inactive:hover {
+  opacity: 0.8;
+  border-color: rgba(229, 62, 62, 0.5);
+}
+
+.inactive-warning {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 0.6rem;
+  margin: 0.8rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #ffc107;
+}
+
+.warning-icon {
+  animation: pulse 2s infinite;
+}
+
+.activate-btn {
+  background: linear-gradient(135deg, #48bb78, #2f855a) !important;
+  color: white !important;
+}
+
+.activate-btn:hover {
+  background: linear-gradient(135deg, #38a169, #276749) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+}
+
+.deactivate-btn {
+  background: linear-gradient(135deg, #ed8936, #dd6b20) !important;
+  color: white !important;
+}
+
+.deactivate-btn:hover {
+  background: linear-gradient(135deg, #dd6b20, #c05621) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(237, 137, 54, 0.3);
+}
+
 /* STAT CARDS */
 .stat-card h3 {
   color: rgba(255, 250, 230, 0.92) !important;
@@ -3038,6 +3939,137 @@ function deleteBrand(index) {
 .modal-content h2 {
   font-size: 1.4rem !important;
   margin-bottom: 0.8rem !important;
+}
+
+/* Delete Confirmation Modal Styles */
+.delete-modal {
+  max-width: 500px !important;
+  text-align: center;
+}
+
+.delete-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.delete-modal-header .delete-icon {
+  font-size: 2.5rem;
+  animation: pulse 2s infinite;
+}
+
+.delete-modal-header h2 {
+  font-family: 'Cinzel', serif !important;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 45%, #c44569 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  margin: 0 !important;
+}
+
+.delete-modal-body {
+  margin-bottom: 2rem;
+}
+
+.delete-message {
+  color: #e0e0e0;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.delete-item-preview {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preview-label {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+}
+
+.preview-name {
+  color: #FFD700;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.delete-warning {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 0.8rem;
+  margin-top: 1rem;
+}
+
+.delete-warning p {
+  color: #ffc107;
+  margin: 0;
+  font-weight: 600;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.delete-confirm-btn {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delete-confirm-btn:hover {
+  background: linear-gradient(135deg, #c82333, #a71e2a);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.delete-cancel-btn {
+  background: linear-gradient(135deg, #6c757d, #5a6268);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delete-cancel-btn:hover {
+  background: linear-gradient(135deg, #5a6268, #495057);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 /* WordPress Admin Dashboard Structure Styles */
@@ -3273,4 +4305,218 @@ function deleteBrand(index) {
   position: static !important;
   margin-bottom: 10px;
 }
+
+/* ─── MONITOR DE PÁGINAS ESTILOS ─── */
+.page-monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.monitor-card {
+  background: linear-gradient(145deg, rgba(28,22,14,0.95), rgba(19,14,9,0.95)) !important;
+  border: 1px solid rgba(201,168,76,0.15) !important;
+  border-radius: 12px !important;
+  padding: 1.2rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.monitor-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 4px; height: 100%;
+  background: var(--gold);
+  opacity: 0.6;
+}
+
+.monitor-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--gold) !important;
+  box-shadow: 0 10px 30px rgba(201,168,76,0.15);
+}
+
+.monitor-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(201,168,76,0.1);
+  padding-bottom: 0.5rem;
+}
+
+.page-icon {
+  font-size: 1.4rem;
+}
+
+.monitor-header h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: #FFE066;
+  margin: 0;
+}
+
+.monitor-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.monitor-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.monitor-stat .label {
+  color: rgba(200,175,130,0.7);
+}
+
+.monitor-stat .value {
+  color: #fff;
+  font-weight: 600;
+}
+
+.badge-count {
+  background: rgba(201,168,76,0.2);
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  color: #FFE066 !important;
+  border: 1px solid rgba(201,168,76,0.3);
+}
+
+.health-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  margin: 0 0.8rem;
+  overflow: hidden;
+}
+
+.health-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #E87B2B, #FFE066);
+  border-radius: 3px;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  background: rgba(72, 187, 120, 0.2);
+  color: #48bb78 !important;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.warning-text {
+  color: #f6ad55 !important;
+}
+
+.preview-btn {
+  margin-top: 0.5rem;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(201,168,76,0.05);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 6px;
+  color: rgba(201,168,76,0.8);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.preview-btn:hover {
+  background: rgba(201,168,76,0.15);
+  color: #FFE066;
+  border-color: #FFE066;
+}
+
+/* ─── LIVE INDICATOR ─── */
+.live-indicator-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #48bb78;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 10px #48bb78;
+}
+
+.live-dot::after {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border: 2px solid #48bb78;
+  border-radius: 50%;
+  animation: livePulse 2s infinite;
+}
+
+@keyframes livePulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+.live-text {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #48bb78;
+  text-transform: uppercase;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+/* ─── SHOWROOM INTEGRATION ─── */
+.showroom-integration {
+  padding: 0 !important;
+  overflow: hidden;
+  background: #000 !important;
+  border-color: rgba(255, 215, 0, 0.4) !important;
+}
+.showroom-container-admin {
+  width: 100%;
+  height: 80vh;
+  position: relative;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+.showroom-container-admin :deep(.showroom-wrapper) {
+  min-height: 100%;
+  position: relative;
+}
+.showroom-container-admin :deep(.showroom-navbar) {
+  display: none; /* Hide internal navbar inside admin */
+}
+
+.wp-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: slideIn 0.3s ease-out;
+}
+.wp-toast.info { background-color: #3182ce; }
+.wp-toast.success { background-color: #48bb78; }
+.wp-toast.error { background-color: #e53e3e; }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 </style>
+

@@ -6,7 +6,7 @@
     <!-- Navbar -->
     <nav class="navbar">
       <div class="navbar-content">
-        <router-link to="/" class="brand-title">Brindis Express</router-link>
+        <router-link to="/home" class="brand-title">Brindis Express</router-link>
         <div class="nav-section">
           <div class="nav-links">
             <router-link to="/home" class="nav-link">
@@ -16,14 +16,6 @@
             <router-link to="/promociones" class="nav-link">
               <span class="nav-icon">🎯</span>
               Promociones
-            </router-link>
-            <router-link to="/menuvirtual" class="nav-link">
-              <span class="nav-icon">📖</span>
-              Menú Virtual
-            </router-link>
-            <router-link to="/home?showTerms=true" class="nav-link">
-              <span class="nav-icon">📋</span>
-              Política
             </router-link>
             <a href='#contactanos' class="nav-link">
               <span class="nav-icon">📞</span>
@@ -320,6 +312,11 @@
               <h3 class="product-title">{{ product.titulo }}</h3>
               <p class="product-description">{{ product.descripcion }}</p>
               
+              <div class="price-display">
+                <span class="price-label">Precio:</span>
+                <span class="price-value">{{ product.precio }}</span>
+              </div>
+              
               <!-- Rating -->
               <div class="product-rating">
                 <div class="stars">
@@ -453,7 +450,7 @@
 
     <!-- ══════════════ FOOTER ══════════════ -->
     <footer class="footer" id="contactanos">
-      <div class="footer-top-border"/>
+      <div class="footer-top-border"></div>
       <div class="footer-inner">
         <div class="footer-brand">
           <span class="fb-emblem">🥃</span>

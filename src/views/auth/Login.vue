@@ -224,6 +224,108 @@
       </div>
     </div>
 
+    <!-- Suspended Account Modal -->
+    <div v-if="showSuspendedAccountModal" class="modal-overlay" @click="closeSuspendedAccountModal">
+      <div class="modal-card suspended-modal" @click.stop>
+        <div class="modal-header suspended-header">
+          <div class="suspended-icon-container">
+            <div class="suspended-icon">🔒</div>
+          </div>
+          <h3>Cuenta Suspendida</h3>
+          <button @click="closeSuspendedAccountModal" class="close-btn">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 6L18 18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-content suspended-content">
+          <div class="suspended-warning">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-text">
+              <h4>Acceso Denegado por Razones de Seguridad</h4>
+              <p>Tu cuenta ha sido suspendida temporalmente por medidas de seguridad.</p>
+              <p class="reason-text">Esto puede deberse a:</p>
+              <ul class="reason-list">
+                <li>Actividad sospechosa detectada</li>
+                <li>Violación de los términos de servicio</li>
+                <li>Medidas de seguridad preventivas</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="suspended-actions">
+            <div class="action-info">
+              <p><strong>¿Qué hacer ahora?</strong></p>
+              <p>Contacta al administrador del sistema para reactivar tu cuenta.</p>
+              <div class="contact-info">
+                <span class="contact-label">📧 Email de soporte:</span>
+                <span class="contact-value">admin@brindisexpress.com</span>
+              </div>
+            </div>
+            
+            <div class="modal-actions">
+              <button @click="closeSuspendedAccountModal" class="modal-btn primary">
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Login Suspended Modal -->
+    <div v-if="showGoogleLoginSuspendedModal" class="modal-overlay" @click="closeGoogleLoginSuspendedModal">
+      <div class="modal-card" style="max-width: 500px; background: linear-gradient(145deg, rgba(40,40,40,0.95), rgba(30,30,30,0.95)); border: 2px solid rgba(234, 67, 53, 0.3);" @click.stop>
+        <div class="modal-header" style="background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(219, 68, 55, 0.05)); border-bottom: 1px solid rgba(234, 67, 53, 0.3); padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+          <div style="display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: linear-gradient(135deg, rgba(234, 67, 53, 0.2), rgba(219, 68, 55, 0.1)); border-radius: 50%; border: 2px solid rgba(234, 67, 53, 0.4);">
+            <span style="font-size: 2rem;">🚫</span>
+          </div>
+          <h3 style="margin: 0; color: #ea4335; font-size: 1.5rem; font-weight: 700;">Cuenta Suspendida</h3>
+          <button @click="closeGoogleLoginSuspendedModal" class="close-btn" style="margin-left: auto;">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 6L18 18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-content" style="padding: 2rem; color: #ffffff;">
+          <div style="background: rgba(234, 67, 53, 0.05); border: 1px solid rgba(234, 67, 53, 0.2); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
+            <span style="font-size: 2rem; flex-shrink: 0;">🔒</span>
+            <div>
+              <h4 style="color: #ea4335; margin: 0 0 0.5rem 0; font-size: 1.2rem; font-weight: 600;">Cuenta suspendida por razones de seguridad</h4>
+              <p style="color: rgba(255, 255, 255, 0.8); margin: 0.5rem 0; line-height: 1.5;">Tu cuenta de Google ha sido suspendida temporalmente debido a medidas de seguridad.</p>
+              <p style="font-weight: 600; color: rgba(255, 255, 255, 0.9); margin-top: 1rem;">Esto puede deberse a:</p>
+              <ul style="margin: 0.5rem 0 0 1.5rem; color: rgba(255, 255, 255, 0.7);">
+                <li style="margin: 0.3rem 0;">Cuenta no aprobada para inicio de sesión con Google</li>
+                <li style="margin: 0.3rem 0;">Violación de las políticas de seguridad</li>
+                <li style="margin: 0.3rem 0;">Suspensión administrativa</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.02); border-radius: 12px; padding: 1.5rem;">
+            <div>
+              <p style="color: rgba(255, 255, 255, 0.8); margin: 0.5rem 0; line-height: 1.5;"><strong>¿Qué hacer ahora?</strong></p>
+              <p style="color: rgba(255, 255, 255, 0.8); margin: 0.5rem 0; line-height: 1.5;">Contacta con el administrador del sistema para solicitar acceso al inicio de sesión con Google.</p>
+              <div style="background: rgba(66, 133, 244, 0.1); border: 1px solid rgba(66, 133, 244, 0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                <span style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">📧 Soporte Administrativo:</span>
+                <span style="color: #4285f4; font-weight: 600; font-family: 'Courier New', monospace;">admin@brindisexpress.com</span>
+              </div>
+            </div>
+            
+            <div class="modal-actions" style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+              <button @click="closeGoogleLoginSuspendedModal" class="modal-btn" style="background: linear-gradient(135deg, rgba(234, 67, 53, 0.2), rgba(219, 68, 55, 0.1)); border: 1px solid rgba(234, 67, 53, 0.4); color: #ea4335; padding: 0.8rem 2rem; font-weight: 600; border-radius: 25px; cursor: pointer;">
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="auth-grid">
       <!-- Sección de Marca (Lado Izquierdo) -->
       <div class="auth-brand-section">
@@ -326,6 +428,7 @@
                   <span class="google-divider-text">o continúa con</span>
                   <span class="google-divider-line" />
                 </div>
+                <!-- Google Sign-In Button Container -->
                 <div id="googleBtn" class="google-login"></div>
               </form>
             </div>
@@ -452,7 +555,7 @@
               id="admin-email"
               v-model="adminLoginData.email"
               required
-              placeholder="admin@correo.com"
+              placeholder="admin@brazzino.com"
               :disabled="isLoading"
               class="admin-input"
             />
@@ -565,6 +668,8 @@ export default {
       },
       showAdminPassword: false,
       showForgotPasswordModal: false,
+      showSuspendedAccountModal: false,
+      showGoogleLoginSuspendedModal: false,
       currentStep: "email",
       isProcessing: false,
       modalError: "",
@@ -629,24 +734,22 @@ export default {
     }
   },
 
+  mounted() {
+    console.log("🔍 Login component mounted");
+    if (this.currentView === 'login') {
+      this.initGoogleLogin();
+    }
+  },
+
   watch: {
-    // Vigila el cambio de vista para renderizar el botón de Google si es login
     currentView(newView) {
       if (newView === 'login') {
         this.$nextTick(() => {
-          this.initGoogleButton();
+          this.initGoogleLogin();
         });
       }
     }
   },
-
-  mounted() {
-  console.log("CLIENT_ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
-  console.log("ORIGIN:", window.location.origin);
-  if (this.currentView === 'login') {
-    this.waitForGoogleSDK();
-  }
-},
 
   methods: {
 
@@ -656,6 +759,33 @@ export default {
       this.successMessage = null;
       this.modalError = "";
       this.modalSuccess = "";
+    },
+
+    // Suspended Account Modal Methods
+    showSuspendedAccountModal() {
+      this.showSuspendedAccountModal = true;
+      this.clearMessages();
+    },
+
+    closeSuspendedAccountModal() {
+      this.showSuspendedAccountModal = false;
+    },
+
+    // Google Login Suspended Modal Methods
+    openGoogleLoginSuspendedModal() {
+      console.log('🔍 openGoogleLoginSuspendedModal called');
+      this.showGoogleLoginSuspendedModal = true;
+      console.log('🔍 Modal state set to true:', this.showGoogleLoginSuspendedModal);
+      this.clearMessages();
+      
+      // Force Vue reactivity
+      this.$forceUpdate();
+      console.log('🔍 Force update completed');
+    },
+
+    closeGoogleLoginSuspendedModal() {
+      console.log('🔍 closeGoogleLoginSuspendedModal called');
+      this.showGoogleLoginSuspendedModal = false;
     },
 
 
@@ -671,7 +801,7 @@ export default {
     },
 
     goHome() {
-      this.$router.push("/");
+      this.$router.push("/home");
     },
 
 
@@ -690,15 +820,76 @@ export default {
         const token = data.access_token || data.token || data.accessToken;
         const usuario = data.usuario || data.user;
         if (!token) throw new Error("Respuesta inválida del servidor");
+        
+        console.log('🔍 Regular Login Response:', {
+          token: token ? 'present' : 'missing',
+          usuario: usuario,
+          activo: usuario?.activo,
+          userFields: Object.keys(usuario || {})
+        });
+        
+        // Additional validation: Check user status against admin endpoint
+      try {
+        const adminResponse = await fetch(`${import.meta.env.VITE_API_URL}/usuarios`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (adminResponse.ok) {
+          const adminUsers = await adminResponse.json();
+          const currentUser = adminUsers.find(u => u.email === usuario.email);
+          
+          console.log('🔍 Admin validation for regular login:', {
+            userEmail: usuario.email,
+            currentUser: currentUser,
+            isActive: currentUser?.activo
+          });
+          
+          // Check if user exists and is active in admin system
+          if (!currentUser) {
+            console.log('🚫 Regular login blocked - user not found in admin system');
+            this.error = 'Usuario no encontrado en el sistema. Contacta al administrador.';
+            return;
+          }
+          
+          if (currentUser.activo === false || currentUser.activo === 0) {
+            console.log('🚫 Regular login blocked - user is inactive in admin system');
+            this.showSuspendedAccountModal();
+            return;
+          }
+          
+          // Update user data with admin system status
+          usuario.activo = currentUser.activo;
+          
+        } else {
+          console.log('⚠️ Could not validate against admin endpoint, proceeding with caution');
+        }
+      } catch (adminError) {
+        console.log('⚠️ Admin validation failed, using original response:', adminError.message);
+      }
+      
+      // Final status check
+      if (usuario.activo === false || usuario.activo === 0) {
+        console.log('🚫 Regular login blocked - user is inactive after validation');
+        this.showSuspendedAccountModal();
+        return;
+      }
+      
+      console.log('✅ Regular login validated - user is active');
+        
         localStorage.setItem("authToken", token);
         localStorage.setItem("usuario", JSON.stringify(usuario));
         this.successMessage = `¡Bienvenido, ${usuario?.nombre || usuario?.email || "Usuario"}!`;
         setTimeout(() => this.$router.push("/home"), 1000);
       } catch (err) {
-        this.error =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al iniciar sesión.";
+        const errorMsg = err.response?.data?.message || err.message || "Error al iniciar sesión.";
+        
+        // Check if user is inactive/suspended
+        if (errorMsg.toLowerCase().includes('inactivo') || errorMsg.toLowerCase().includes('suspendido')) {
+          console.log('🚫 Regular login blocked - user is inactive/suspended');
+          this.showSuspendedAccountModal();
+        } else {
+          this.error = errorMsg;
+        }
       } finally {
         this.isLoading = false;
       }
@@ -736,62 +927,153 @@ export default {
       });
     },
 
-    waitForGoogleSDK() {
-      if (typeof google !== 'undefined' && google.accounts) {
-        this.initGoogleButton();
-      } else {
-        setTimeout(() => this.waitForGoogleSDK(), 300);
-      }
-    },
-    // --- LÓGICA DE GOOGLE ---
-    initGoogleButton() {
-      if (typeof google === 'undefined') {
-        console.warn("SDK de Google no detectado, reintentando...");
-        setTimeout(this.initGoogleButton, 500);
-        return;
-      }
+    // REAL GOOGLE OAUTH LOGIN
+    async loadGoogleSDK() {
+      return new Promise((resolve, reject) => {
+        if (window.google && window.google.accounts) {
+          console.log('✅ Google SDK already loaded');
+          resolve();
+          return;
+        }
 
-      google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: this.handleGoogleLogin,
+        console.log('🔍 Loading Google Identity Services SDK...');
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        
+        script.onload = () => {
+          console.log('✅ Google SDK loaded successfully');
+          resolve();
+        };
+        
+        script.onerror = () => {
+          console.error('❌ Failed to load Google SDK');
+          reject(new Error('Failed to load Google SDK'));
+        };
+        
+        document.head.appendChild(script);
       });
+    },
 
-      const container = document.getElementById("googleBtn");
-      if (container) {
-        google.accounts.id.renderButton(container, {
-          theme: "outline",
-          size: "large",
-          width: 300,
-          text: "signin_with",
-          locale: "es"
+    async initGoogleLogin() {
+      console.log('🔍 Initializing Google Login...');
+      
+      try {
+        await this.loadGoogleSDK();
+        
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+        console.log('🔍 Google Client ID:', clientId ? 'Present' : 'Missing');
+        
+        if (!clientId) {
+          console.error('❌ Google Client ID not configured');
+          this.error = 'Google login not configured. Please contact admin.';
+          return;
+        }
+
+        // Initialize Google Identity Services
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: this.handleGoogleLoginResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          context: 'signin'
         });
+
+        // Render the Google button
+        const googleBtnContainer = document.getElementById('googleBtn');
+        if (googleBtnContainer) {
+          console.log('✅ Rendering Google button');
+          window.google.accounts.id.renderButton(googleBtnContainer, {
+            type: 'standard',
+            theme: 'filled_black',
+            size: 'large',
+            width: 280,
+            text: 'signin_with',
+            shape: 'rectangular',
+            logo_alignment: 'left'
+          });
+        } else {
+          console.error('❌ Google button container not found');
+        }
+
+        // Also enable One Tap (optional)
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            console.log('🔍 One Tap not displayed:', notification.getNotDisplayedReason());
+          }
+        });
+
+      } catch (error) {
+        console.error('❌ Google login initialization failed:', error);
+        this.error = 'Error initializing Google login. Please try again.';
       }
     },
 
-   async handleGoogleLogin(response) {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: response.credential }),
-    });
+    async handleGoogleLoginResponse(response) {
+      console.log('🔍 Google login response received');
+      
+      try {
+        this.isLoading = true;
+        this.clearMessages();
 
-    const data = await res.json();
+        if (!response.credential) {
+          throw new Error('No credential received from Google');
+        }
 
-    if (res.ok) {
-      // Usar las mismas claves que el login normal
-      localStorage.setItem('authToken', data.access_token);
-      localStorage.setItem('usuario', JSON.stringify(data.usuario));
-      this.successMessage = `¡Bienvenido, ${data.usuario.nombre || data.usuario.email}!`;
-      setTimeout(() => { this.$router.push('/dashboard'); }, 1000);
-    } else {
-      this.error = data.message || 'Error al iniciar sesión con Google';
-    }
-  } catch (error) {
-    this.error = 'Error de conexión con el servidor';
-    console.error("Error:", error);
-  }
-},
+        // Decode JWT to get user info
+        const jwtPayload = JSON.parse(atob(response.credential.split('.')[1]));
+        console.log('✅ Google user info:', {
+          email: jwtPayload.email,
+          name: jwtPayload.name,
+          picture: jwtPayload.picture
+        });
+
+        // Call backend to verify and create session
+        const apiResponse = await axios.post(
+          `${import.meta.env.VITE_API_URL}/auth/google/login`,
+          {
+            token: response.credential
+          }
+        );
+
+        const { access_token, usuario } = apiResponse.data;
+
+        // Check if user is active
+        if (usuario.activo === false || usuario.activo === 0) {
+          console.log('🚫 Google login blocked - user is inactive');
+          this.showSuspendedAccountModal();
+          return;
+        }
+
+        // Store session
+        localStorage.setItem('authToken', access_token);
+        localStorage.setItem('usuario', JSON.stringify(usuario));
+        localStorage.setItem('googleLogin', 'true');
+
+        console.log('✅ Google login successful - user:', usuario.nombre);
+        this.successMessage = `¡Bienvenido, ${usuario.nombre || usuario.email}!`;
+
+        // Redirect to home
+        setTimeout(() => {
+          this.$router.push('/home');
+        }, 1000);
+
+      } catch (error) {
+        console.error('❌ Google login error:', error);
+        
+        const errorMsg = error.response?.data?.message || '';
+        
+        if (errorMsg.includes('suspendido') || errorMsg.includes('inactivo') || errorMsg.includes('Unauthorized')) {
+          console.log('🚫 Google login blocked - user is suspended');
+          this.showSuspendedAccountModal();
+        } else {
+          this.error = errorMsg || 'Error al iniciar sesión con Google';
+        }
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
     // --- MANEJO DE REGISTRO ---
     async handleRegister() {
@@ -1439,6 +1721,33 @@ export default {
   display: flex; justify-content: center;
   margin: 0.2rem 0;
 }
+
+.google-login-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #3c4043;
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.google-login-btn:hover {
+  background: #f8f9fa;
+  border-color: #dadce0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.google-login-btn:active {
+  background: #f1f3f4;
+}
  
 /* ══ BOTÓN PRINCIPAL ══ */
 .auth-btn {
@@ -1680,21 +1989,19 @@ export default {
   display: flex; align-items: center; justify-content: center; padding: 1.5rem;
   animation: fadeIn 0.25s ease;
 }
- 
+
 .modal-card {
   background: linear-gradient(145deg, var(--dark3), var(--dark2));
   border: 1px solid rgba(201,168,76,0.2);
   border-radius: 10px;
-  width: 100%; max-width: 500px;
-  max-height: 90vh; overflow-y: auto;
+  max-width: 90vw; max-height: 90vh;
+  overflow-y: auto;
   position: relative;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.9), 0 0 60px rgba(201,168,76,0.05);
-  animation: slideIn 0.3s ease;
+  animation: slideUp 0.25s ease;
+  display: block;
+  visibility: visible;
 }
-@keyframes slideIn {
-  from { opacity:0; transform:translateY(-16px) scale(0.97); }
-  to   { opacity:1; transform:translateY(0) scale(1); }
-}
+ 
 .modal-card::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 2px;
@@ -1814,6 +2121,397 @@ export default {
 .password-match { margin-top: 0.4rem; font-size: 0.8rem; font-weight: 600; }
 .match-success { color: #34D399; }
 .match-error   { color: #EF4444; }
+ 
+/* ══ SUSPENDED ACCOUNT MODAL ══ */
+.suspended-modal {
+  max-width: 500px;
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+}
+
+.suspended-header {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+  border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.suspended-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+  border-radius: 50%;
+  border: 2px solid rgba(239, 68, 68, 0.4);
+  animation: pulse-red 2s infinite;
+}
+
+.suspended-icon {
+  font-size: 2rem;
+  animation: lock-pulse 1.5s ease-in-out infinite;
+}
+
+.suspended-header h3 {
+  margin: 0;
+  color: #ef4444;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.suspended-content {
+  padding: 2rem;
+}
+
+.suspended-warning {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.warning-icon {
+  font-size: 2rem;
+  animation: warning-shake 0.5s ease-in-out infinite alternate;
+  flex-shrink: 0;
+}
+
+.warning-text h4 {
+  color: #ef4444;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.warning-text p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.reason-text {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9) !important;
+  margin-top: 1rem !important;
+}
+
+.reason-list {
+  margin: 0.5rem 0 0 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.reason-list li {
+  margin: 0.3rem 0;
+  list-style-type: none;
+  position: relative;
+}
+
+.reason-list li::before {
+  content: "🔴";
+  margin-right: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.suspended-actions {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.action-info p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.action-info strong {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.contact-info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contact-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.contact-value {
+  color: #60a5fa;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.modal-actions .modal-btn.primary {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  padding: 0.8rem 2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.modal-actions .modal-btn.primary:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.2));
+  border-color: rgba(239, 68, 68, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+/* Animations */
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes lock-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes warning-shake {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(2px); }
+}
+
+/* ══ GOOGLE LOGIN SUSPENDED MODAL ══ */
+.google-suspended-modal {
+  max-width: 500px;
+  max-height: 90vh;
+  border: 2px solid rgba(234, 67, 53, 0.3);
+  box-shadow: 0 0 30px rgba(234, 67, 53, 0.2);
+  background: linear-gradient(145deg, rgba(40,40,40,0.95), rgba(30,30,30,0.95));
+  overflow-y: auto;
+}
+
+.scrollable-modal {
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(234, 67, 53, 0.3) transparent;
+}
+
+.scrollable-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.scrollable-modal::-webkit-scrollbar-thumb {
+  background: rgba(234, 67, 53, 0.5);
+  border-radius: 4px;
+}
+
+.scrollable-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(234, 67, 53, 0.7);
+}
+
+.google-suspended-header {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(219, 68, 55, 0.05));
+  border-bottom: 1px solid rgba(234, 67, 53, 0.3);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.google-suspended-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.2), rgba(219, 68, 55, 0.1));
+  border-radius: 50%;
+  border: 2px solid rgba(234, 67, 53, 0.4);
+  animation: google-pulse-red 2s infinite;
+}
+
+.google-suspended-icon {
+  font-size: 2rem;
+  animation: google-block-pulse 1.5s ease-in-out infinite;
+}
+
+.google-suspended-header h3 {
+  margin: 0;
+  color: #ea4335;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(234, 67, 53, 0.3);
+}
+
+.google-suspended-content {
+  padding: 2rem;
+  color: #ffffff;
+}
+
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: rgba(234, 67, 53, 0.4);
+  border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(234, 67, 53, 0.6);
+}
+
+.google-suspended-warning {
+  background: rgba(234, 67, 53, 0.05);
+  border: 1px solid rgba(234, 67, 53, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.google-warning-icon {
+  font-size: 2rem;
+  animation: google-warning-shake 0.5s ease-in-out infinite alternate;
+  flex-shrink: 0;
+}
+
+.google-warning-text h4 {
+  color: #ea4335;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.google-warning-text p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.google-reason-text {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9) !important;
+  margin-top: 1rem !important;
+}
+
+.google-reason-list {
+  margin: 0.5rem 0 0 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.google-reason-list li {
+  margin: 0.3rem 0;
+  list-style-type: none;
+  position: relative;
+}
+
+.google-reason-list li::before {
+  content: "🔴";
+  margin-right: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.google-suspended-actions {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.google-action-info p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.google-action-info strong {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.google-contact-info {
+  background: rgba(66, 133, 244, 0.1);
+  border: 1px solid rgba(66, 133, 244, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.google-contact-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.google-contact-value {
+  color: #4285f4;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+.modal-actions .google-primary {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.2), rgba(219, 68, 55, 0.1));
+  border: 1px solid rgba(234, 67, 53, 0.4);
+  color: #ea4335;
+  padding: 0.8rem 2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.modal-actions .google-primary:hover {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.3), rgba(219, 68, 55, 0.2));
+  border-color: rgba(234, 67, 53, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(234, 67, 53, 0.3);
+}
+
+/* Google Modal Animations */
+@keyframes google-pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(234, 67, 53, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
+}
+
+@keyframes google-block-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes google-warning-shake {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(2px); }
+}
  
 /* ══ RESPONSIVE ══ */
 @media (max-width: 500px) {

@@ -3,8 +3,13 @@ const MainRoutes = {
   meta: {
     requiresAuth: false,
   },
-  component: () => import('@/views/pages/home.vue'),
+  component: () => import('@/layouts/blank/BlankLayout.vue'),
   children: [
+    {
+      name: 'landing',
+      path: '',
+      component: () => import('@/views/pages/home.vue')
+    },
     {
       name: 'home',
       path: '/home',
@@ -14,6 +19,12 @@ const MainRoutes = {
       name: 'catalogo',
       path: '/catalogo',
       component: () => import('@/views/pages/catalogo.vue')
+    },
+    {
+      name: 'compra',
+      path: '/compra',
+      component: () => import('@/views/pages/compra.vue'),
+      meta: { requiresAuth: false }
     },
 
     {

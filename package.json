@@ -20,6 +20,7 @@
         "lodash": "^4.17.21",
         "maska": "^1.5.0",
         "pinia": "^3.0.4",
+        "socket.io-client": "^4.8.1",
         "vite-plugin-vuetify": "2.0.1",
         "vue": "3.4.26",
         "vue-draggable-next": "^2.3.0",
