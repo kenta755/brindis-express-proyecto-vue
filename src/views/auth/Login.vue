@@ -882,12 +882,21 @@ export default {
         setTimeout(() => this.$router.push("/home"), 1000);
       } catch (err) {
         const errorMsg = err.response?.data?.message || err.message || "Error al iniciar sesión.";
+        const isBackendResponse = err.response && err.response.data;
         
-        // Check if user is inactive/suspended
-        if (errorMsg.toLowerCase().includes('inactivo') || errorMsg.toLowerCase().includes('suspendido')) {
+        // Only show suspended modal for actual backend "user suspended/inactive" responses
+        const isUserInactive = isBackendResponse && (
+          errorMsg.toLowerCase().includes('inactivo') || 
+          errorMsg.toLowerCase().includes('suspendido') ||
+          errorMsg.toLowerCase().includes('desactivado')
+        );
+        
+        if (isUserInactive) {
           console.log('🚫 Regular login blocked - user is inactive/suspended');
           this.showSuspendedAccountModal();
         } else {
+          // Show generic error for other failures (wrong password, server errors, etc.)
+          console.log('⚠️ Login error (not suspended):', errorMsg);
           this.error = errorMsg;
         }
       } finally {
@@ -1062,13 +1071,24 @@ export default {
       } catch (error) {
         console.error('❌ Google login error:', error);
         
-        const errorMsg = error.response?.data?.message || '';
+        const errorMsg = error.response?.data?.message || error.message || '';
+        const isBackendResponse = error.response && error.response.data;
         
-        if (errorMsg.includes('suspendido') || errorMsg.includes('inactivo') || errorMsg.includes('Unauthorized')) {
+        // Only show suspended modal for actual backend "user suspended" responses
+        // Not for Google SDK errors (401/403 from Google) or network errors
+        const isUserSuspended = isBackendResponse && (
+          errorMsg.toLowerCase().includes('suspendido') || 
+          errorMsg.toLowerCase().includes('inactivo') ||
+          errorMsg.toLowerCase().includes('desactivado')
+        );
+        
+        if (isUserSuspended) {
           console.log('🚫 Google login blocked - user is suspended');
           this.showSuspendedAccountModal();
         } else {
-          this.error = errorMsg || 'Error al iniciar sesión con Google';
+          // Show generic error for Google SDK errors, network issues, etc.
+          console.log('⚠️ Google login error (not suspended):', errorMsg);
+          this.error = errorMsg || 'Error al iniciar sesión con Google. Intenta de nuevo.';
         }
       } finally {
         this.isLoading = false;
