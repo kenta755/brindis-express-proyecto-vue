@@ -882,14 +882,27 @@ export default {
         setTimeout(() => this.$router.push("/home"), 1000);
       } catch (err) {
         const errorMsg = err.response?.data?.message || err.message || "Error al iniciar sesión.";
-        const isBackendResponse = err.response && err.response.data;
+        const statusCode = err.response?.status;
         
-        // Only show suspended modal for actual backend "user suspended/inactive" responses
-        const isUserInactive = isBackendResponse && (
-          errorMsg.toLowerCase().includes('inactivo') || 
-          errorMsg.toLowerCase().includes('suspendido') ||
-          errorMsg.toLowerCase().includes('desactivado')
-        );
+        // STRICT CHECK: Only show suspended modal for actual backend "user suspended/inactive" responses
+        const hasSuspensionKeywords = errorMsg.toLowerCase().includes('inactivo') || 
+                                      errorMsg.toLowerCase().includes('suspendido') ||
+                                      errorMsg.toLowerCase().includes('desactivado') ||
+                                      errorMsg.toLowerCase().includes('usuario suspendido') ||
+                                      errorMsg.toLowerCase().includes('cuenta suspendida');
+        
+        // Must come from our backend API (has response.data.message)
+        const isBackendError = err.response?.data && err.response.data.message !== undefined;
+        
+        const isUserInactive = isBackendError && hasSuspensionKeywords;
+        
+        console.log('Login error analysis:', {
+          errorMsg,
+          statusCode,
+          isBackendError,
+          hasSuspensionKeywords,
+          isUserInactive
+        });
         
         if (isUserInactive) {
           console.log('🚫 Regular login blocked - user is inactive/suspended');
@@ -1072,15 +1085,29 @@ export default {
         console.error('❌ Google login error:', error);
         
         const errorMsg = error.response?.data?.message || error.message || '';
-        const isBackendResponse = error.response && error.response.data;
+        const statusCode = error.response?.status;
         
-        // Only show suspended modal for actual backend "user suspended" responses
-        // Not for Google SDK errors (401/403 from Google) or network errors
-        const isUserSuspended = isBackendResponse && (
-          errorMsg.toLowerCase().includes('suspendido') || 
-          errorMsg.toLowerCase().includes('inactivo') ||
-          errorMsg.toLowerCase().includes('desactivado')
-        );
+        // STRICT CHECK: Only show suspended modal when backend explicitly says user is suspended
+        // Must be: HTTP 401/403/400 AND message contains suspendido/inactivo/desactivado
+        // This prevents Google SDK errors (403 from Google) from triggering the modal
+        const hasSuspensionKeywords = errorMsg.toLowerCase().includes('suspendido') || 
+                                      errorMsg.toLowerCase().includes('inactivo') ||
+                                      errorMsg.toLowerCase().includes('desactivado') ||
+                                      errorMsg.toLowerCase().includes('usuario suspendido') ||
+                                      errorMsg.toLowerCase().includes('cuenta suspendida');
+        
+        // Must come from our backend API (has response.data.message), not Google SDK
+        const isBackendError = error.response?.data && error.response.data.message !== undefined;
+        
+        const isUserSuspended = isBackendError && hasSuspensionKeywords;
+        
+        console.log('Error analysis:', {
+          errorMsg,
+          statusCode,
+          isBackendError,
+          hasSuspensionKeywords,
+          isUserSuspended
+        });
         
         if (isUserSuspended) {
           console.log('🚫 Google login blocked - user is suspended');
@@ -1088,7 +1115,12 @@ export default {
         } else {
           // Show generic error for Google SDK errors, network issues, etc.
           console.log('⚠️ Google login error (not suspended):', errorMsg);
-          this.error = errorMsg || 'Error al iniciar sesión con Google. Intenta de nuevo.';
+          // Don't show technical error messages to user
+          if (errorMsg.includes('origin is not allowed') || errorMsg.includes('403')) {
+            this.error = 'Error de configuración de Google Login. Contacta al administrador.';
+          } else {
+            this.error = errorMsg || 'Error al iniciar sesión con Google. Intenta de nuevo.';
+          }
         }
       } finally {
         this.isLoading = false;
