@@ -884,21 +884,29 @@ export default {
         const errorMsg = err.response?.data?.message || err.message || "Error al iniciar sesión.";
         const statusCode = err.response?.status;
         
-        // STRICT CHECK: Only show suspended modal for actual backend "user suspended/inactive" responses
+        // STRICTEST CHECK: Only show suspended modal when:
+        // 1. Backend responds with 401 or 403 status (unauthorized/forbidden)
+        // 2. Backend has a message field
+        // 3. Message contains suspension keywords
+        const isUnauthorizedStatus = statusCode === 401 || statusCode === 403;
         const hasSuspensionKeywords = errorMsg.toLowerCase().includes('inactivo') || 
                                       errorMsg.toLowerCase().includes('suspendido') ||
                                       errorMsg.toLowerCase().includes('desactivado') ||
                                       errorMsg.toLowerCase().includes('usuario suspendido') ||
                                       errorMsg.toLowerCase().includes('cuenta suspendida');
         
-        // Must come from our backend API (has response.data.message)
-        const isBackendError = err.response?.data && err.response.data.message !== undefined;
+        // Must come from our backend API with proper error structure
+        const isBackendError = err.response?.data && 
+                               typeof err.response.data === 'object' &&
+                               err.response.data.message !== undefined;
         
-        const isUserInactive = isBackendError && hasSuspensionKeywords;
+        // Only show suspended modal if ALL conditions are met
+        const isUserInactive = isUnauthorizedStatus && isBackendError && hasSuspensionKeywords;
         
         console.log('Login error analysis:', {
           errorMsg,
           statusCode,
+          isUnauthorizedStatus,
           isBackendError,
           hasSuspensionKeywords,
           isUserInactive
@@ -1087,23 +1095,30 @@ export default {
         const errorMsg = error.response?.data?.message || error.message || '';
         const statusCode = error.response?.status;
         
-        // STRICT CHECK: Only show suspended modal when backend explicitly says user is suspended
-        // Must be: HTTP 401/403/400 AND message contains suspendido/inactivo/desactivado
-        // This prevents Google SDK errors (403 from Google) from triggering the modal
+        // STRICTEST CHECK: Only show suspended modal when:
+        // 1. Backend responds with 401 or 403 status (unauthorized/forbidden)
+        // 2. Backend has a message field
+        // 3. Message contains suspension keywords
+        // This prevents Google SDK errors (403 from Google SDK) from triggering the modal
+        const isUnauthorizedStatus = statusCode === 401 || statusCode === 403;
         const hasSuspensionKeywords = errorMsg.toLowerCase().includes('suspendido') || 
                                       errorMsg.toLowerCase().includes('inactivo') ||
                                       errorMsg.toLowerCase().includes('desactivado') ||
                                       errorMsg.toLowerCase().includes('usuario suspendido') ||
                                       errorMsg.toLowerCase().includes('cuenta suspendida');
         
-        // Must come from our backend API (has response.data.message), not Google SDK
-        const isBackendError = error.response?.data && error.response.data.message !== undefined;
+        // Must come from our backend API with proper structure
+        const isBackendError = error.response?.data && 
+                               typeof error.response.data === 'object' &&
+                               error.response.data.message !== undefined;
         
-        const isUserSuspended = isBackendError && hasSuspensionKeywords;
+        // Only show suspended modal if ALL conditions are met
+        const isUserSuspended = isUnauthorizedStatus && isBackendError && hasSuspensionKeywords;
         
         console.log('Error analysis:', {
           errorMsg,
           statusCode,
+          isUnauthorizedStatus,
           isBackendError,
           hasSuspensionKeywords,
           isUserSuspended
@@ -1116,7 +1131,7 @@ export default {
           // Show generic error for Google SDK errors, network issues, etc.
           console.log('⚠️ Google login error (not suspended):', errorMsg);
           // Don't show technical error messages to user
-          if (errorMsg.includes('origin is not allowed') || errorMsg.includes('403')) {
+          if (errorMsg.includes('origin is not allowed') || (statusCode === 403 && !isBackendError)) {
             this.error = 'Error de configuración de Google Login. Contacta al administrador.';
           } else {
             this.error = errorMsg || 'Error al iniciar sesión con Google. Intenta de nuevo.';
