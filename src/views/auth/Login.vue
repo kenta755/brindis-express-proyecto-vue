@@ -1,5 +1,6 @@
 <template>
-  <div class="login-page">
+  <!-- DEBUG BUILD v3 - MODAL DISABLED -->
+  <div class="login-page" data-build="v3-no-modal">
     <div class="background-overlay" aria-hidden="true"></div>
     <div class="auth-container">
       <!-- Botón Admin (esquina superior izquierda) -->
