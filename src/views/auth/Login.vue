@@ -735,7 +735,7 @@ export default {
   },
 
   mounted() {
-    console.log("🔍 Login component mounted");
+    console.log("🔍 Login component mounted - v2");
     if (this.currentView === 'login') {
       this.initGoogleLogin();
     }
@@ -763,6 +763,8 @@ export default {
 
     // Suspended Account Modal Methods
     openSuspendedAccountModal() {
+      console.log('🔴 openSuspendedAccountModal CALLED - tracking stack trace');
+      console.trace(); // This will show what called this method
       this.showSuspendedAccountModal = true;
       this.clearMessages();
     },
