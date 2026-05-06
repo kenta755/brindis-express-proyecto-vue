@@ -762,9 +762,14 @@ export default {
     },
 
     // Suspended Account Modal Methods
-    openSuspendedAccountModal() {
-      console.log('🔴 openSuspendedAccountModal CALLED - tracking stack trace');
+    openSuspendedAccountModal(force = false) {
+      console.log('🔴 openSuspendedAccountModal CALLED - force:', force);
       console.trace(); // This will show what called this method
+      // TEMPORARY: Only show modal if explicitly forced (backend confirmed suspension)
+      if (!force) {
+        console.log('🚫 Modal blocked - not forced by backend');
+        return;
+      }
       this.showSuspendedAccountModal = true;
       this.clearMessages();
     },
