@@ -1130,11 +1130,17 @@ export default {
         } else {
           // Show generic error for Google SDK errors, network issues, etc.
           console.log('⚠️ Google login error (not suspended):', errorMsg);
+          // NEVER show suspended modal for non-backend errors
           // Don't show technical error messages to user
-          if (errorMsg.includes('origin is not allowed') || (statusCode === 403 && !isBackendError)) {
-            this.error = 'Error de configuración de Google Login. Contacta al administrador.';
+          if (errorMsg.includes('origin is not allowed') || errorMsg.includes('not allowed for the given client') || (statusCode === 403 && !isBackendError)) {
+            console.log('🔧 Google OAuth config error - not showing suspended modal');
+            this.error = 'Error de configuración de Google Login. Verifica el dominio en Google Cloud Console.';
+          } else if (!isBackendError) {
+            // Any non-backend error should never trigger suspended modal
+            console.log('🔧 Non-backend error - not showing suspended modal');
+            this.error = 'Error al iniciar sesión con Google. Intenta de nuevo.';
           } else {
-            this.error = errorMsg || 'Error al iniciar sesión con Google. Intenta de nuevo.';
+            this.error = errorMsg || 'Error al iniciar sesión con Google.';
           }
         }
       } finally {
