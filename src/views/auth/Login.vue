@@ -224,56 +224,12 @@
       </div>
     </div>
 
-    <!-- Suspended Account Modal -->
-    <div v-if="showSuspendedAccountModal" class="modal-overlay" @click="closeSuspendedAccountModal">
+    <!-- Suspended Account Modal - TEMPORARILY DISABLED FOR DEBUGGING -->
+    <!-- <div v-if="showSuspendedAccountModal" class="modal-overlay" @click="closeSuspendedAccountModal">
       <div class="modal-card suspended-modal" @click.stop>
-        <div class="modal-header suspended-header">
-          <div class="suspended-icon-container">
-            <div class="suspended-icon">🔒</div>
-          </div>
-          <h3>Cuenta Suspendida</h3>
-          <button @click="closeSuspendedAccountModal" class="close-btn">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 6L6 18" stroke="currentColor" stroke-width="2"/>
-              <path d="M6 6L18 18" stroke="currentColor" stroke-width="2"/>
-            </svg>
-          </button>
-        </div>
-
-        <div class="modal-content suspended-content">
-          <div class="suspended-warning">
-            <div class="warning-icon">⚠️</div>
-            <div class="warning-text">
-              <h4>Acceso Denegado por Razones de Seguridad</h4>
-              <p>Tu cuenta ha sido suspendida temporalmente por medidas de seguridad.</p>
-              <p class="reason-text">Esto puede deberse a:</p>
-              <ul class="reason-list">
-                <li>Actividad sospechosa detectada</li>
-                <li>Violación de los términos de servicio</li>
-                <li>Medidas de seguridad preventivas</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="suspended-actions">
-            <div class="action-info">
-              <p><strong>¿Qué hacer ahora?</strong></p>
-              <p>Contacta al administrador del sistema para reactivar tu cuenta.</p>
-              <div class="contact-info">
-                <span class="contact-label">📧 Email de soporte:</span>
-                <span class="contact-value">admin@brindisexpress.com</span>
-              </div>
-            </div>
-            
-            <div class="modal-actions">
-              <button @click="closeSuspendedAccountModal" class="modal-btn primary">
-                Entendido
-              </button>
-            </div>
-          </div>
-        </div>
+        MODAL DISABLED FOR DEBUGGING
       </div>
-    </div>
+    </div> -->
 
     <!-- Google Login Suspended Modal -->
     <div v-if="showGoogleLoginSuspendedModal" class="modal-overlay" @click="closeGoogleLoginSuspendedModal">
