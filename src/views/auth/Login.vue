@@ -1,9 +1,5 @@
 <template>
-  <div class="login-page" data-build="v3-no-modal">
-    <!-- DEBUG: BUILD v3 - Si ves esto, el deploy funcionó -->
-    <div style="position:fixed;top:0;left:0;background:red;color:white;padding:5px;z-index:9999;font-size:12px;">
-      DEBUG BUILD v3 - MODAL DISABLED
-    </div>
+  <div class="login-page">
     <div class="background-overlay" aria-hidden="true"></div>
     <div class="auth-container">
       <!-- Botón Admin (esquina superior izquierda) -->
@@ -228,12 +224,56 @@
       </div>
     </div>
 
-    <!-- Suspended Account Modal - TEMPORARILY DISABLED FOR DEBUGGING -->
-    <!-- <div v-if="showSuspendedAccountModal" class="modal-overlay" @click="closeSuspendedAccountModal">
+    <!-- Suspended Account Modal -->
+    <div v-if="showSuspendedAccountModal" class="modal-overlay" @click="closeSuspendedAccountModal">
       <div class="modal-card suspended-modal" @click.stop>
-        MODAL DISABLED FOR DEBUGGING
+        <div class="modal-header suspended-header">
+          <div class="suspended-icon-container">
+            <div class="suspended-icon">🔒</div>
+          </div>
+          <h3>Cuenta Suspendida</h3>
+          <button @click="closeSuspendedAccountModal" class="close-btn">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 6L18 18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-content suspended-content">
+          <div class="suspended-warning">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-text">
+              <h4>Acceso Denegado por Razones de Seguridad</h4>
+              <p>Tu cuenta ha sido suspendida temporalmente por medidas de seguridad.</p>
+              <p class="reason-text">Esto puede deberse a:</p>
+              <ul class="reason-list">
+                <li>Actividad sospechosa detectada</li>
+                <li>Violación de los términos de servicio</li>
+                <li>Medidas de seguridad preventivas</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="suspended-actions">
+            <div class="action-info">
+              <p><strong>¿Qué hacer ahora?</strong></p>
+              <p>Contacta al administrador del sistema para reactivar tu cuenta.</p>
+              <div class="contact-info">
+                <span class="contact-label">📧 Email de soporte:</span>
+                <span class="contact-value">admin@brindisexpress.com</span>
+              </div>
+            </div>
+            
+            <div class="modal-actions">
+              <button @click="closeSuspendedAccountModal" class="modal-btn primary">
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div> -->
+    </div>
 
     <!-- Google Login Suspended Modal -->
     <div v-if="showGoogleLoginSuspendedModal" class="modal-overlay" @click="closeGoogleLoginSuspendedModal">
@@ -724,8 +764,7 @@ export default {
     // Suspended Account Modal Methods
     openSuspendedAccountModal(force = false) {
       console.log('🔴 openSuspendedAccountModal CALLED - force:', force);
-      console.trace(); // This will show what called this method
-      // TEMPORARY: Only show modal if explicitly forced (backend confirmed suspension)
+      // Only show modal if explicitly forced by backend confirmed suspension
       if (!force) {
         console.log('🚫 Modal blocked - not forced by backend');
         return;
@@ -820,7 +859,7 @@ export default {
           
           if (currentUser.activo === false || currentUser.activo === 0) {
             console.log('🚫 Regular login blocked - user is inactive in admin system');
-            this.openSuspendedAccountModal();
+            this.openSuspendedAccountModal(true); // Backend confirmed suspension
             return;
           }
           
@@ -837,7 +876,7 @@ export default {
       // Final status check
       if (usuario.activo === false || usuario.activo === 0) {
         console.log('🚫 Regular login blocked - user is inactive after validation');
-        this.openSuspendedAccountModal();
+        this.openSuspendedAccountModal(true); // Backend confirmed suspension
         return;
       }
       
@@ -881,7 +920,7 @@ export default {
         
         if (isUserInactive) {
           console.log('🚫 Regular login blocked - user is inactive/suspended');
-          this.openSuspendedAccountModal();
+          this.openSuspendedAccountModal(true); // Backend confirmed suspension
         } else {
           // Show generic error for other failures (wrong password, server errors, etc.)
           console.log('⚠️ Login error (not suspended):', errorMsg);
@@ -1039,7 +1078,7 @@ export default {
         // Check if user is active
         if (usuario.activo === false || usuario.activo === 0) {
           console.log('🚫 Google login blocked - user is inactive');
-          this.openSuspendedAccountModal();
+          this.openSuspendedAccountModal(true); // Backend confirmed suspension
           return;
         }
 
@@ -1093,7 +1132,7 @@ export default {
         
         if (isUserSuspended) {
           console.log('🚫 Google login blocked - user is suspended');
-          this.openSuspendedAccountModal();
+          this.openSuspendedAccountModal(true); // Backend confirmed suspension
         } else {
           // Show generic error for Google SDK errors, network issues, etc.
           console.log('⚠️ Google login error (not suspended):', errorMsg);
