@@ -762,7 +762,7 @@ export default {
     },
 
     // Suspended Account Modal Methods
-    showSuspendedAccountModal() {
+    openSuspendedAccountModal() {
       this.showSuspendedAccountModal = true;
       this.clearMessages();
     },
@@ -853,7 +853,7 @@ export default {
           
           if (currentUser.activo === false || currentUser.activo === 0) {
             console.log('🚫 Regular login blocked - user is inactive in admin system');
-            this.showSuspendedAccountModal();
+            this.openSuspendedAccountModal();
             return;
           }
           
@@ -870,7 +870,7 @@ export default {
       // Final status check
       if (usuario.activo === false || usuario.activo === 0) {
         console.log('🚫 Regular login blocked - user is inactive after validation');
-        this.showSuspendedAccountModal();
+        this.openSuspendedAccountModal();
         return;
       }
       
@@ -914,7 +914,7 @@ export default {
         
         if (isUserInactive) {
           console.log('🚫 Regular login blocked - user is inactive/suspended');
-          this.showSuspendedAccountModal();
+          this.openSuspendedAccountModal();
         } else {
           // Show generic error for other failures (wrong password, server errors, etc.)
           console.log('⚠️ Login error (not suspended):', errorMsg);
@@ -1072,7 +1072,7 @@ export default {
         // Check if user is active
         if (usuario.activo === false || usuario.activo === 0) {
           console.log('🚫 Google login blocked - user is inactive');
-          this.showSuspendedAccountModal();
+          this.openSuspendedAccountModal();
           return;
         }
 
@@ -1126,7 +1126,7 @@ export default {
         
         if (isUserSuspended) {
           console.log('🚫 Google login blocked - user is suspended');
-          this.showSuspendedAccountModal();
+          this.openSuspendedAccountModal();
         } else {
           // Show generic error for Google SDK errors, network issues, etc.
           console.log('⚠️ Google login error (not suspended):', errorMsg);
