@@ -735,7 +735,7 @@ export default {
   },
 
   mounted() {
-    console.log("🔍 Login component mounted - v2");
+    console.log("🔍 Login component mounted - production build");
     if (this.currentView === 'login') {
       this.initGoogleLogin();
     }
