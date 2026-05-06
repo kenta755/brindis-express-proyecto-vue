@@ -1,6 +1,9 @@
 <template>
-  <!-- DEBUG BUILD v3 - MODAL DISABLED -->
   <div class="login-page" data-build="v3-no-modal">
+    <!-- DEBUG: BUILD v3 - Si ves esto, el deploy funcionó -->
+    <div style="position:fixed;top:0;left:0;background:red;color:white;padding:5px;z-index:9999;font-size:12px;">
+      DEBUG BUILD v3 - MODAL DISABLED
+    </div>
     <div class="background-overlay" aria-hidden="true"></div>
     <div class="auth-container">
       <!-- Botón Admin (esquina superior izquierda) -->
