@@ -735,7 +735,7 @@ export default {
   },
 
   mounted() {
-    console.log("🔍 Login component mounted - production build");
+    console.log("🔍 Login component mounted");
     if (this.currentView === 'login') {
       this.initGoogleLogin();
     }
@@ -1007,18 +1007,24 @@ export default {
           return;
         }
 
-        // Initialize Google Identity Services
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: this.handleGoogleLoginResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          context: 'signin'
-        });
+        // Initialize Google Identity Services (only once)
+        if (!window._googleInitialized) {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: this.handleGoogleLoginResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+            context: 'signin'
+          });
+          window._googleInitialized = true;
+          console.log('✅ Google Sign-In initialized');
+        }
 
         // Render the Google button
         const googleBtnContainer = document.getElementById('googleBtn');
         if (googleBtnContainer) {
+          // Clear container before rendering to avoid duplicates
+          googleBtnContainer.innerHTML = '';
           console.log('✅ Rendering Google button');
           window.google.accounts.id.renderButton(googleBtnContainer, {
             type: 'standard',
@@ -1036,7 +1042,7 @@ export default {
         // Also enable One Tap (optional)
         window.google.accounts.id.prompt((notification) => {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            console.log('🔍 One Tap not displayed:', notification.getNotDisplayedReason());
+            console.log('🔍 One Tap status:', notification.getNotDisplayedReason());
           }
         });
 
